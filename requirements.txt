@@ -10,7 +10,7 @@ contourpy==1.2.0
 cycler==0.12.1
 Farama-Notifications==0.0.4
 fastfiz @ git+https://github.com/williamwoldum/fastfiz.git@2af8aed22bec1faeb5ac92b98b0751a0023f3fb7
-fastfiz-renderer==0.0.1
+fastfiz_renderer @ git+https://github.com/williamwoldum/fastfiz-renderer.git@e87a739d09518a4520ad0be2a5c2a17c470235a2
 filelock==3.13.1
 fonttools==4.49.0
 freetype-py==2.4.0

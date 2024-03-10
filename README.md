@@ -9,7 +9,7 @@ pip install --file requirements.txt
 ## Usage
 To use the CLI, run the following command:
 ```
-python src/main.py <mode> [-e EPISODES] [-t TIMESTEPS]
+python src/main.py <mode> [-e <episodes>] [-t <timesteps>]
 ```
 
 The available modes:

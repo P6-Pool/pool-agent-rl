@@ -2,6 +2,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecNormalize
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3 import PPO
+import fastfiz_env
 from stable_baselines3.ppo.policies import MlpPolicy
 import gymnasium as gym
 import os
@@ -18,7 +19,7 @@ else:
 
 BALLS = 2
 
-MODEL_NAME = f"ppo-v{VERSION}-b{BALLS}"
+MODEL_NAME = f"ppo-v{VERSION}-b{BALLS}-2x32"
 TB_LOGS_DIR = "logs/tb_logs/"
 LOGS_DIR = f"logs/{MODEL_NAME}"
 MODEL_DIR = f"models/{MODEL_NAME}/"
@@ -26,14 +27,14 @@ BEST_MODEL_DIR = f"models/{MODEL_NAME}/best/"
 
 
 def make_env():
-    return gym.make("BaseRLFastFiz-v0", num_balls=BALLS)
+    return gym.make("BaseRLFastFiz-v0", num_balls=BALLS, max_episode_steps=100)
 
 
-net_arch = dict(pi=[128, 128, 128], vf=[128, 128, 128])
-
+net_arch = dict(pi=[32, 32], vf=[32, 32])
 
 env = VecNormalize(make_vec_env(make_env, n_envs=4),
                    training=True, norm_obs=True, norm_reward=True)
+
 model = PPO(MlpPolicy, env,
             verbose=1, tensorboard_log=TB_LOGS_DIR, policy_kwargs={"net_arch": net_arch})
 

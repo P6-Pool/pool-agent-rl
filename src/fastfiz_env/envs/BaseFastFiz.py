@@ -8,6 +8,7 @@ from typing import Optional
 class BaseFastFiz(gym.Env):
     """Base class for FastFiz environments."""
     EPSILON_THETA = 0.001  # To avoid max theta (from FastFiz.h)
+    TOTAL_BALLS = 16  # Including the cue ball
 
     def __init__(self, num_balls: Optional[int] = 15) -> None:
         super().__init__()

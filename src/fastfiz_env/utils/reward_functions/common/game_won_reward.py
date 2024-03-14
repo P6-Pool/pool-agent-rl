@@ -29,3 +29,4 @@ class GameWonReward(RewardFunction):
         for i in range(1, self.num_balls):
             if not table_state.getBall(i).isPocketed():
                 return False
+        return True

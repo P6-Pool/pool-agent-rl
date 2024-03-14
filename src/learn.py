@@ -28,7 +28,7 @@ BEST_MODEL_DIR = f"models/{MODEL_NAME}/best/"
 
 rewards = [StepPocketedReward(), BestTotalDistanceReward(), GameWonReward(
 ), ImpossibleShotReward(), CueBallNotMovedReward(), CueBallPocketedReward(), ConstantReward()]
-weights = [5, 1, 100, -100, -100, -100, -1]
+weights = [10, 5, 100, -100, -100, -100, -1]
 
 reward_fn = CombinedReward(rewards, weights)
 

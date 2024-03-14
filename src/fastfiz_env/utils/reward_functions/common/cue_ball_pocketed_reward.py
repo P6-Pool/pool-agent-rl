@@ -11,7 +11,7 @@ class CueBallPocketedReward(RewardFunction):
 
     def get_reward(self, prev_table_state, table_state, possible_shot) -> float:
         """
-        Reward function returns -1 if the cue ball is pocketed, 0 otherwise.
+        Reward function returns 1 if the cue ball is pocketed, 0 otherwise.
         """
         cue_ball_pocketed = table_state.getBall(0).isPocketed()
-        return -1 if cue_ball_pocketed else 0
+        return float(1) if cue_ball_pocketed else float(0)

@@ -16,4 +16,4 @@ class StepPocketedReward(RewardFunction):
         """
         prev_pocketed = num_balls_pocketed(prev_table_state)
         pocketed = num_balls_pocketed(table_state)
-        return pocketed - prev_pocketed
+        return float(pocketed - prev_pocketed)

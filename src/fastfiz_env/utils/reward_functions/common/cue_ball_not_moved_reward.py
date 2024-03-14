@@ -15,4 +15,4 @@ class CueBallNotMovedReward(RewardFunction):
         """
         cue_ball_moved = table_state.getBall(
             0).getPos() != prev_table_state.getBall(0).getPos()
-        return 1 if not cue_ball_moved else 0
+        return float(1) if not cue_ball_moved else float(0)

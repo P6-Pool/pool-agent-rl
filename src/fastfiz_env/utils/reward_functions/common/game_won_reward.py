@@ -2,6 +2,10 @@ from ..reward_function import RewardFunction
 
 
 class GameWonReward(RewardFunction):
+    """
+    Reward function that rewards based on whether the game is won.
+    """
+
     def reset(self, table_state) -> None:
         pass
 
@@ -9,7 +13,7 @@ class GameWonReward(RewardFunction):
         """
         Reward function returns -1 if the shot is impossible, 0 otherwise.
         """
-        return 0 if possible_shot else -1
+        return float(1) if self._game_won(table_state) else float(0)
 
     def _game_won(self, table_state) -> bool:
         """

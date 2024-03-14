@@ -27,24 +27,23 @@ model.learn(total_timesteps=10000)
 
 """
 
-from . import utils, envs
+from .make import make
+
+__all__ = ["make"]
 
 from gymnasium.envs.registration import register
 
 register(
     id='BaseFastFiz-v0',
     entry_point="fastfiz_env.envs:BaseFastFiz",
-    disable_env_checker=True
 )
 
 register(
     id='BaseRLFastFiz-v0',
     entry_point="fastfiz_env.envs:BaseRLFastFiz",
-    disable_env_checker=True
 )
 
 register(
     id='PocketRLFastFiz-v0',
     entry_point="fastfiz_env.envs:PocketRLFastFiz",
-    disable_env_checker=True
 )

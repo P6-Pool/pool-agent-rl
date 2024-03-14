@@ -23,5 +23,4 @@ class CombinedReward(RewardFunction):
         """
         reward = np.dot([reward.get_reward(prev_table_state, table_state, possible_shot)
                         for reward in self.reward_functions], self.weights)
-        print(f"Reward: {reward}")
         return reward

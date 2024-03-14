@@ -10,6 +10,7 @@ def make(env_id, reward_function: RewardFunction, num_balls: Optional[int] = 15,
 
     Args:
         env_id (str): The environment id.
+        reward_function (RewardFunction): The reward function to use in the environment.
         num_balls (int, optional): The number of balls in the environment. Defaults to 15.
         max_episode_steps (int, optional): The maximum number of steps in an episode. Defaults to 100.
         disable_env_checker (bool, optional): Whether to disable the environment checker. Defaults to True.

@@ -2,6 +2,7 @@ import numpy as np
 import gymnasium as gym
 import fastfiz as ff
 from ..utils.fastfiz import create_table_state, shot_params_from_action
+from ..utils import RewardFunction
 from typing import Optional
 
 
@@ -10,10 +11,11 @@ class BaseFastFiz(gym.Env):
     EPSILON_THETA = 0.001  # To avoid max theta (from FastFiz.h)
     TOTAL_BALLS = 16  # Including the cue ball
 
-    def __init__(self, num_balls: Optional[int] = 15) -> None:
+    def __init__(self, reward_function: RewardFunction, num_balls: Optional[int] = 15) -> None:
         super().__init__()
         self.num_balls = num_balls
         self.table_state = create_table_state(num_balls)
+        self.reward = reward_function
         self.observation_space = self._observation_space()
         self.action_space = self._action_space()
 
@@ -24,7 +26,7 @@ class BaseFastFiz(gym.Env):
         super().reset(seed=seed)
 
         self.table_state = create_table_state(self.num_balls)
-
+        self.reward.reset(self.table_state)
         observation = self._get_observation()
         info = self._get_info()
 
@@ -43,7 +45,8 @@ class BaseFastFiz(gym.Env):
             self.table_state.executeShot(shot_params)
 
         observation = self._get_observation()
-        reward = self._get_reward(prev_table_state, possible_shot)
+        reward = self.reward.get_reward(
+            prev_table_state, self.table_state, possible_shot)
         terminated = self._is_terminal_state()
         truncated = False
         info = self._get_info()
@@ -59,12 +62,6 @@ class BaseFastFiz(gym.Env):
     def _get_observation(self) -> np.ndarray:
         """
         Get the observation of the environment.
-        """
-        raise NotImplementedError("This method must be implemented")
-
-    def _get_reward(self, prev_table_state: ff.TableState, possible_shot: bool) -> float:
-        """
-        Get the reward of the environment.
         """
         raise NotImplementedError("This method must be implemented")
 

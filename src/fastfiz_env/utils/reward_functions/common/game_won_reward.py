@@ -1,4 +1,5 @@
 from ..reward_function import RewardFunction
+from ....utils.fastfiz import num_balls_in_play
 
 
 class GameWonReward(RewardFunction):
@@ -7,7 +8,7 @@ class GameWonReward(RewardFunction):
     """
 
     def reset(self, table_state) -> None:
-        pass
+        self.num_balls = num_balls_in_play(table_state)
 
     def get_reward(self, prev_table_state, table_state, possible_shot) -> float:
         """

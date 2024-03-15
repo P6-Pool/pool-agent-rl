@@ -1,7 +1,7 @@
-from ..reward_function import RewardFunction
+from .. import BinaryReward
 
 
-class ImpossibleShotReward(RewardFunction):
+class ImpossibleShotReward(BinaryReward):
     """
     Reward function that rewards based on whether the shot is possible.
     """

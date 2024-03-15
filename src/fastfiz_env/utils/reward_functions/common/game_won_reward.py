@@ -1,8 +1,8 @@
-from ..reward_function import RewardFunction
+from .. import BinaryReward
 from ....utils.fastfiz import num_balls_in_play
 
 
-class GameWonReward(RewardFunction):
+class GameWonReward(BinaryReward):
     """
     Reward function that rewards based on whether the game is won.
     """

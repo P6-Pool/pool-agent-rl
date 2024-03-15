@@ -1,7 +1,7 @@
-from ..reward_function import RewardFunction
+from .. import BinaryReward
 
 
-class CueBallPocketedReward(RewardFunction):
+class CueBallPocketedReward(BinaryReward):
     """
     Reward function that reward based on whether the cue ball is pocketed.
     """

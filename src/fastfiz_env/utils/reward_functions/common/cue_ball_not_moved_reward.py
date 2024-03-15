@@ -1,7 +1,7 @@
-from ..reward_function import RewardFunction
+from .. import BinaryReward
 
 
-class CueBallNotMovedReward(RewardFunction):
+class CueBallNotMovedReward(BinaryReward):
     """
     Reward function that reward based on whether the cue ball has moved.
     """
@@ -13,6 +13,7 @@ class CueBallNotMovedReward(RewardFunction):
         """
         Reward function returns 1 if the cue ball has not moved, 0 otherwise.
         """
-        cue_ball_moved = table_state.getBall(
-            0).getPos() != prev_table_state.getBall(0).getPos()
+        cue_ball_moved = (
+            table_state.getBall(0).getPos() != prev_table_state.getBall(0).getPos()
+        )
         return float(1) if not cue_ball_moved else float(0)

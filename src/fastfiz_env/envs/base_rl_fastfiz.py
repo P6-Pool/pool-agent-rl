@@ -1,28 +1,36 @@
 import numpy as np
 from gymnasium import spaces
-import gymnasium as gym
-import fastfiz as ff
 from typing import Optional
-from ..utils.fastfiz import create_random_table_state, get_ball_positions, num_balls_pocketed, distances_to_closest_pocket
+from ..utils.fastfiz import (
+    create_random_table_state,
+    get_ball_positions,
+)
 from ..utils import RewardFunction
 from . import BaseFastFiz
 
 
 class BaseRLFastFiz(BaseFastFiz):
     """FastFiz environment with random initial state, used for reinforcemet learning."""
-    EPSILON_THETA = 0.001  # To avoid max theta (from FastFiz.h)
-    TOTAL_BALLS = 16  # Including the cue ball
 
-    def __init__(self, reward_function: RewardFunction, num_balls: Optional[int] = 15, ) -> None:
+    def __init__(
+        self,
+        reward_function: RewardFunction,
+        num_balls: Optional[int] = 15,
+    ) -> None:
         super().__init__(reward_function=reward_function, num_balls=num_balls)
+        self.table_state = create_random_table_state(self.num_balls)
         self.observation_space = self._observation_space()
         self.action_space = self._action_space()
         self.reward = reward_function
 
-    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> tuple[np.ndarray, dict]:
+    def reset(
+        self, *, seed: Optional[int] = None, options: Optional[dict] = None
+    ) -> tuple[np.ndarray, dict]:
         super().reset(seed=seed)
 
         self.table_state = create_random_table_state(self.num_balls, seed=seed)
+        self.reward.reset(self.table_state)
+
         observation = self._get_observation()
         info = self._get_info()
 
@@ -69,10 +77,8 @@ class BaseRLFastFiz(BaseFastFiz):
         """
         table = self.table_state.getTable()
         lower = np.full((self.TOTAL_BALLS, 2), [0, 0])
-        upper = np.full((self.TOTAL_BALLS, 2), [
-                        table.TABLE_WIDTH, table.TABLE_LENGTH])
-        return spaces.Box(
-            low=lower, high=upper, dtype=np.float64)
+        upper = np.full((self.TOTAL_BALLS, 2), [table.TABLE_WIDTH, table.TABLE_LENGTH])
+        return spaces.Box(low=lower, high=upper, dtype=np.float64)
 
     def _action_space(self):
         """

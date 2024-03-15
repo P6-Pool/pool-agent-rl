@@ -1,10 +1,15 @@
 import gymnasium as gym
-from typing import Optional
 from .utils import RewardFunction
 
 
-def make(env_id, reward_function: RewardFunction, num_balls: Optional[int] = 15,  max_episode_steps: Optional[int] = 100,
-         disable_env_checker: Optional[bool] = True, **kwargs) -> gym.Env:
+def make(
+    env_id,
+    reward_function: RewardFunction,
+    num_balls: int = 15,
+    max_episode_steps: int = 100,
+    disable_env_checker: bool = True,
+    **kwargs
+) -> gym.Env:
     """
     Create an instance of the specified environment.
 
@@ -19,4 +24,11 @@ def make(env_id, reward_function: RewardFunction, num_balls: Optional[int] = 15,
     Returns:
         gym.Env: The environment instance.
     """
-    return gym.make(env_id, reward_function=reward_function, num_balls=num_balls, max_episode_steps=max_episode_steps, disable_env_checker=disable_env_checker, **kwargs)
+    return gym.make(
+        env_id,
+        reward_function=reward_function,
+        num_balls=num_balls,
+        max_episode_steps=max_episode_steps,
+        disable_env_checker=disable_env_checker,
+        **kwargs
+    )

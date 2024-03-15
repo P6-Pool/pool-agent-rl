@@ -8,18 +8,23 @@ from typing import Optional
 
 class BaseFastFiz(gym.Env):
     """Base class for FastFiz environments."""
+
     EPSILON_THETA = 0.001  # To avoid max theta (from FastFiz.h)
     TOTAL_BALLS = 16  # Including the cue ball
 
-    def __init__(self, reward_function: RewardFunction, num_balls: Optional[int] = 15) -> None:
+    def __init__(
+        self, reward_function: RewardFunction, num_balls: Optional[int] = 15
+    ) -> None:
         super().__init__()
         self.num_balls = num_balls
-        self.table_state = create_table_state(num_balls)
         self.reward = reward_function
+        self.table_state = create_table_state(self.num_balls)
         self.observation_space = self._observation_space()
         self.action_space = self._action_space()
 
-    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> tuple[np.ndarray, dict]:
+    def reset(
+        self, *, seed: Optional[int] = None, options: Optional[dict] = None
+    ) -> tuple[np.ndarray, dict]:
         """
         Reset the environment to its initial state.
         """
@@ -46,7 +51,8 @@ class BaseFastFiz(gym.Env):
 
         observation = self._get_observation()
         reward = self.reward.get_reward(
-            prev_table_state, self.table_state, possible_shot)
+            prev_table_state, self.table_state, possible_shot
+        )
         terminated = self._is_terminal_state()
         truncated = False
         info = self._get_info()
@@ -87,8 +93,10 @@ class BaseFastFiz(gym.Env):
         """
         Check if the shot is possible.
         """
-        return self.table_state.isPhysicallyPossible(
-            shot_params) == ff.TableState.OK_PRECONDITION
+        return (
+            self.table_state.isPhysicallyPossible(shot_params)
+            == ff.TableState.OK_PRECONDITION
+        )
 
     def _observation_space(self) -> gym.Space:
         """

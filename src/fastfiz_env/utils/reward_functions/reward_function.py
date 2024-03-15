@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-import numpy as np
 import fastfiz as ff
 
 
 class RewardFunction(ABC):
     """
-    Abstract class for reward functions.
+    Abstract base class for reward functions.
     """
+
     @abstractmethod
     def reset(self, table_state: ff.TableState) -> None:
         """
@@ -21,7 +21,12 @@ class RewardFunction(ABC):
         pass
 
     @abstractmethod
-    def get_reward(self, prev_table_state: ff.TableState, table_state: ff.TableState, possible_shot: bool) -> float:
+    def get_reward(
+        self,
+        prev_table_state: ff.TableState,
+        table_state: ff.TableState,
+        possible_shot: bool,
+    ) -> float:
         """
         Calculates the reward for a given table state transition.
 

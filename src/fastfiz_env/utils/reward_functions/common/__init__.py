@@ -1,3 +1,7 @@
+"""
+This module contains implementations of useful reward functions for the FastFiz environment.
+"""
+
 from .step_pocketed_reward import StepPocketedReward
 from .total_distance_reward import TotalDistanceReward
 from .best_total_distance_reward import BestTotalDistanceReward
@@ -7,5 +11,13 @@ from .game_won_reward import GameWonReward
 from .impossible_shot_reward import ImpossibleShotReward
 from .constant_reward import ConstantReward
 
-__all__ = ["StepPocketedReward", "TotalDistanceReward", "BestTotalDistanceReward",
-           "CueBallPocketedReward", "CueBallNotMovedReward", "GameWonReward", "ImpossibleShotReward", "ConstantReward"]
+__all__ = [
+    "StepPocketedReward",
+    "TotalDistanceReward",
+    "BestTotalDistanceReward",
+    "CueBallPocketedReward",
+    "CueBallNotMovedReward",
+    "GameWonReward",
+    "ImpossibleShotReward",
+    "ConstantReward",
+]

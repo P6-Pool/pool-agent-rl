@@ -1,6 +1,10 @@
 import numpy as np
 from ..reward_function import RewardFunction
-from ....utils.fastfiz import distances_to_closest_pocket, get_ball_positions, num_balls_in_play
+from ....utils.fastfiz import (
+    distances_to_closest_pocket,
+    get_ball_positions,
+    num_balls_in_play,
+)
 
 
 class TotalDistanceReward(RewardFunction):

@@ -28,8 +28,9 @@ model.learn(total_timesteps=10_000)
 """
 
 from .make import make
+from . import envs, utils
 
-__all__ = ["make"]
+__all__ = ["make", "envs", "utils"]
 
 from gymnasium.envs.registration import register
 

@@ -12,16 +12,16 @@ Avaliable environments:
 Use the environment for training a reinforcement learning agent:
 
 ```python
-import gymnasium as gym
 from stable_baselines3 import PPO
-import fastfiz_env # Register the environments
+import fastfiz_env
+from fastfiz_env.utils.reward_functions.common import StepPocketedReward
 
-
-env = gym.make("BaseRLFastFiz-v0", num_balls=2, max_episode_steps=100)
+reward_function = StepPocketedReward()
+env = fastfiz_env.make("BaseRLFastFiz-v0", reward_function=reward_function, num_balls=2)
 
 model = PPO("MlpPolicy", env, verbose=1)
 
-model.learn(total_timesteps=10000)
+model.learn(total_timesteps=10_000)
 
 ```
 
@@ -34,16 +34,16 @@ __all__ = ["make"]
 from gymnasium.envs.registration import register
 
 register(
-    id='BaseFastFiz-v0',
+    id="BaseFastFiz-v0",
     entry_point="fastfiz_env.envs:BaseFastFiz",
 )
 
 register(
-    id='BaseRLFastFiz-v0',
+    id="BaseRLFastFiz-v0",
     entry_point="fastfiz_env.envs:BaseRLFastFiz",
 )
 
 register(
-    id='PocketRLFastFiz-v0',
+    id="PocketRLFastFiz-v0",
     entry_point="fastfiz_env.envs:PocketRLFastFiz",
 )

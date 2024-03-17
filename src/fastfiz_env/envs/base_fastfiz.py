@@ -2,7 +2,7 @@ import numpy as np
 import gymnasium as gym
 import fastfiz as ff
 from ..utils.fastfiz import create_table_state, shot_params_from_action
-from ..utils import RewardFunction
+from ..utils import RewardFunction, DefaultReward
 from typing import Optional
 
 
@@ -13,7 +13,7 @@ class BaseFastFiz(gym.Env):
     TOTAL_BALLS = 16  # Including the cue ball
 
     def __init__(
-        self, reward_function: RewardFunction, num_balls: Optional[int] = 15
+        self, reward_function: RewardFunction = DefaultReward, num_balls: int = 15
     ) -> None:
         super().__init__()
         self.num_balls = num_balls
@@ -37,7 +37,7 @@ class BaseFastFiz(gym.Env):
 
         return observation, info
 
-    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, dict]:
+    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, dict]:
         """
         Execute an action in the environment.
         """

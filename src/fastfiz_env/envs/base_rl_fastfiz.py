@@ -5,7 +5,7 @@ from ..utils.fastfiz import (
     create_random_table_state,
     get_ball_positions,
 )
-from ..utils import RewardFunction
+from ..utils import RewardFunction, DefaultReward
 from . import BaseFastFiz
 
 
@@ -14,8 +14,8 @@ class BaseRLFastFiz(BaseFastFiz):
 
     def __init__(
         self,
-        reward_function: RewardFunction,
-        num_balls: Optional[int] = 15,
+        reward_function: RewardFunction = DefaultReward,
+        num_balls: int = 15,
     ) -> None:
         super().__init__(reward_function=reward_function, num_balls=num_balls)
         self.table_state = create_random_table_state(self.num_balls)

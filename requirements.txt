@@ -8,9 +8,10 @@ click==8.1.7
 cloudpickle==3.0.0
 contourpy==1.2.0
 cycler==0.12.1
+exceptiongroup==1.2.0
 Farama-Notifications==0.0.4
-fastfiz @ git+https://github.com/williamwoldum/fastfiz.git@2af8aed22bec1faeb5ac92b98b0751a0023f3fb7
-fastfiz_renderer @ git+https://github.com/williamwoldum/fastfiz-renderer.git@e87a739d09518a4520ad0be2a5c2a17c470235a2
+fastfiz @ git+https://github.com/P6-Pool/fastfiz.git@2af8aed22bec1faeb5ac92b98b0751a0023f3fb7
+fastfiz_renderer @ git+https://github.com/P6-Pool/fastfiz-renderer.git@e87a739d09518a4520ad0be2a5c2a17c470235a2
 filelock==3.13.1
 fonttools==4.49.0
 freetype-py==2.4.0
@@ -21,6 +22,7 @@ gymnasium==0.29.1
 hsluv==5.0.4
 idna==3.6
 importlib_resources==6.1.3
+iniconfig==2.0.0
 Jinja2==3.1.3
 kiwisolver==1.4.5
 Markdown==3.5.2
@@ -44,10 +46,11 @@ nvidia-nccl-cu12==2.19.3
 nvidia-nvjitlink-cu12==12.4.99
 nvidia-nvtx-cu12==12.1.105
 opencv-python==4.9.0.80
-p5 @ git+https://github.com/williamwoldum/p5.git@19b96bc00be29d624982c6ecee23fba104457277
+p5 @ git+https://github.com/P6-Pool/p5.git@19b96bc00be29d624982c6ecee23fba104457277
 packaging==24.0
 pandas==2.2.1
 Pillow==9.0.1
+pluggy==1.4.0
 protobuf==4.25.3
 psutil==5.9.8
 pybind11==2.11.1
@@ -56,6 +59,7 @@ Pygments==2.17.2
 PyOpenGL==3.1.6
 PyOpenGL-accelerate==3.1.7
 pyparsing==3.1.2
+pytest==8.1.1
 python-dateutil==2.9.0.post0
 pytz==2024.1
 requests==2.31.0
@@ -67,6 +71,7 @@ stable-baselines3==2.2.1
 sympy==1.12
 tensorboard==2.16.2
 tensorboard-data-server==0.7.2
+tomli==2.0.1
 torch==2.2.1
 tqdm==4.66.2
 triton==2.2.0

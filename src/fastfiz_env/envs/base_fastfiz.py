@@ -51,14 +51,14 @@ class BaseFastFiz(gym.Env):
         prev_table_state = self.table_state
         shot_params = shot_params_from_action(self.table_state, action)
 
-        possible_shot = self._possible_shot(shot_params)
+        impossible_shot = not self._possible_shot(shot_params)
 
-        if possible_shot:
+        if not impossible_shot:
             self.table_state.executeShot(shot_params)
 
         observation = self._get_observation()
         reward = self.reward.get_reward(
-            prev_table_state, self.table_state, possible_shot
+            prev_table_state, self.table_state, impossible_shot
         )
         terminated = self._is_terminal_state()
         truncated = False

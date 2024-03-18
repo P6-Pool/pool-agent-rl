@@ -4,6 +4,7 @@ import fastfiz as ff
 from ..utils.fastfiz import create_table_state, shot_params_from_action
 from ..utils import RewardFunction, DefaultReward
 from typing import Optional
+import warnings
 
 
 class BaseFastFiz(gym.Env):
@@ -13,9 +14,15 @@ class BaseFastFiz(gym.Env):
     TOTAL_BALLS = 16  # Including the cue ball
 
     def __init__(
-        self, reward_function: RewardFunction = DefaultReward, num_balls: int = 15
+        self, reward_function: RewardFunction = DefaultReward, num_balls: int = 16
     ) -> None:
         super().__init__()
+        if num_balls < 2:
+            warnings.warn(
+                f"FastFiz environment initalized with num_balls={num_balls}.",
+                UserWarning,
+            )
+
         self.num_balls = num_balls
         self.reward = reward_function
         self.table_state = create_table_state(self.num_balls)

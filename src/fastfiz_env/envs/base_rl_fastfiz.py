@@ -15,7 +15,7 @@ class BaseRLFastFiz(BaseFastFiz):
     def __init__(
         self,
         reward_function: RewardFunction = DefaultReward,
-        num_balls: int = 15,
+        num_balls: int = 16,
     ) -> None:
         super().__init__(reward_function=reward_function, num_balls=num_balls)
         self.table_state = create_random_table_state(self.num_balls)

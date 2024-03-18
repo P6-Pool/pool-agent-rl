@@ -10,11 +10,11 @@ class GameWonReward(BinaryReward):
     def reset(self, table_state) -> None:
         self.num_balls = num_balls_in_play(table_state)
 
-    def get_reward(self, prev_table_state, table_state, possible_shot) -> float:
+    def get_reward(self, prev_table_state, table_state, impossible_shot) -> float:
         """
-        Reward function returns -1 if the shot is impossible, 0 otherwise.
+        Reward function that returns 1 if the game is won, 0 otherwise.
         """
-        return float(1) if self._game_won(table_state) else float(0)
+        return 1 if self._game_won(table_state) else 0
 
     def _game_won(self, table_state) -> bool:
         """

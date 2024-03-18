@@ -9,9 +9,9 @@ class CueBallPocketedReward(BinaryReward):
     def reset(self, table_state) -> None:
         pass
 
-    def get_reward(self, prev_table_state, table_state, possible_shot) -> float:
+    def get_reward(self, prev_table_state, table_state, impossible_shot) -> float:
         """
         Reward function returns 1 if the cue ball is pocketed, 0 otherwise.
         """
         cue_ball_pocketed = table_state.getBall(0).isPocketed()
-        return float(1) if cue_ball_pocketed else float(0)
+        return 1 if cue_ball_pocketed else 0

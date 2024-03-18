@@ -25,7 +25,7 @@ class RewardFunction(ABC):
         self,
         prev_table_state: ff.TableState,
         table_state: ff.TableState,
-        possible_shot: bool,
+        impossible_shot: bool,
     ) -> float:
         """
         Calculates the reward for a given table state transition.
@@ -33,7 +33,7 @@ class RewardFunction(ABC):
         Args:
             prev_table_state (ff.TableState): The previous table state.
             table_state (ff.TableState): The current table state.
-            possible_shot (bool): Indicates whether a shot is possible.
+            impossible_shot (bool): Indicates whether a shot is possible.
 
         Returns:
             float: The calculated reward value.

@@ -9,11 +9,13 @@ class CueBallNotMovedReward(BinaryReward):
     def reset(self, table_state) -> None:
         pass
 
-    def get_reward(self, prev_table_state, table_state, possible_shot) -> float:
+    def get_reward(self, prev_table_state, table_state, impossible_shot) -> float:
         """
         Reward function returns 1 if the cue ball has not moved, 0 otherwise.
         """
-        cue_ball_moved = (
-            table_state.getBall(0).getPos() != prev_table_state.getBall(0).getPos()
-        )
-        return float(1) if not cue_ball_moved else float(0)
+
+        prev_pos = prev_table_state.getBall(0).getPos()
+        pos = table_state.getBall(0).getPos()
+        cue_ball_not_moved = prev_pos.x == pos.x and prev_pos.y == pos.y
+
+        return 1 if cue_ball_not_moved else 0

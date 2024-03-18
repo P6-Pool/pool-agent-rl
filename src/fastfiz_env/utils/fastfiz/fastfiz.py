@@ -120,7 +120,7 @@ def distance_to_pocket(ball_position: np.ndarray, pocket: np.ndarray) -> float:
     return np.linalg.norm(pocket - ball_position)
 
 
-def distance_to_pockets(ball_position: np.ndarray) -> np.ndarray:
+def distance_to_pockets(ball_position: np.ndarray, pockets: np.ndarray) -> np.ndarray:
     """
     Calculates the distance from a given ball position to each pocket on the pool table.
 
@@ -130,10 +130,10 @@ def distance_to_pockets(ball_position: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: An array containing the distance from the ball position to each pocket.
     """
-    return np.array([distance_to_pocket(ball_position, pocket) for pocket in POCKETS])
+    return np.array([distance_to_pocket(ball_position, pocket) for pocket in pockets])
 
 
-def distance_to_closest_pocket(ball_position: np.ndarray) -> float:
+def distance_to_closest_pocket(ball_position: np.ndarray, pockets: np.ndarray) -> float:
     """
     Calculates the distance from the given ball position to the closest pocket.
 
@@ -143,21 +143,27 @@ def distance_to_closest_pocket(ball_position: np.ndarray) -> float:
     Returns:
         float: The distance from the ball position to the closest pocket.
     """
-    return np.min(distance_to_pockets(ball_position))
+    return np.min(distance_to_pockets(ball_position, pockets))
 
 
-def distances_to_closest_pocket(ball_positions: np.ndarray) -> np.ndarray:
+def distances_to_closest_pocket(
+    ball_positions: np.ndarray, pockets: np.ndarray
+) -> np.ndarray:
     """
     Calculates the distances from each ball position to the closest pocket.
 
     Args:
         ball_positions (np.ndarray): An array of ball positions.
+        pockets (np.ndarray): An array of pocket positions.
 
     Returns:
         np.ndarray: An array of distances from each ball position to the closest pocket.
     """
     return np.array(
-        [distance_to_closest_pocket(ball_position) for ball_position in ball_positions]
+        [
+            distance_to_closest_pocket(ball_position, pockets)
+            for ball_position in ball_positions
+        ]
     )
 
 

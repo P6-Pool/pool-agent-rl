@@ -39,7 +39,7 @@ class CombinedReward(RewardFunction):
         self,
         prev_table_state: ff.TableState,
         table_state: ff.TableState,
-        possible_shot: bool,
+        impossible_shot: bool,
     ) -> float:
         """
         Calculates the combined reward based on the given table states and possible shot flag.
@@ -56,12 +56,12 @@ class CombinedReward(RewardFunction):
         total_reward = 0
         for i, reward_function in enumerate(self.reward_functions):
             reward = reward_function.get_reward(
-                prev_table_state, table_state, possible_shot
+                prev_table_state, table_state, impossible_shot
             )
             total_reward += reward * self.weights[i]
 
             if issubclass(reward_function.__class__, BinaryReward):
-                if reward == 1 and self.short_circuit:
+                if reward == 1 and self.short_circuit and reward_function.short_circuit:
                     return total_reward
 
         return total_reward

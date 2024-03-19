@@ -51,6 +51,11 @@ register(
 
 
 register(
-    id="SequenceFastFiz-v0",
-    entry_point="fastfiz_env.envs:SequenceFastFiz",
+    id="EventFastFiz-v0",
+    entry_point="fastfiz_env.envs:EventFastFiz",
+)
+
+register(
+    id="VelocityFastFiz-v0",
+    entry_point="fastfiz_env.envs:VelocityFastFiz",
 )

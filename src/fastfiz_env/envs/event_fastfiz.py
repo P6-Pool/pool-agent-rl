@@ -14,7 +14,7 @@ from typing import Optional
 import warnings
 
 
-class SequenceFastFiz(gym.Env):
+class EventFastFiz(gym.Env):
     """Base class for FastFiz environments."""
 
     EPSILON_THETA = 0.001  # To avoid max theta (from FastFiz.h)
@@ -47,7 +47,7 @@ class SequenceFastFiz(gym.Env):
 
         self.table_state = create_table_state(self.num_balls)
         self.reward.reset(self.table_state)
-        observation = self._get_observation(self.table_state, [])
+        observation = self.get_observation(self.table_state, [])
         info = self._get_info()
 
         return observation, info
@@ -92,7 +92,7 @@ class SequenceFastFiz(gym.Env):
             pocketed = prev_table_state.getBall(i).isPocketed()
             event_seq.append([*ball, int(pocketed)])
 
-        obs_sequence = np.zeros((SequenceFastFiz.EVNET_SEQUENCE_LENGTH, 16, 3))
+        obs_sequence = np.zeros((EventFastFiz.EVNET_SEQUENCE_LENGTH, 16, 3))
 
         obs_sequence[0] = event_seq
         for i, event in enumerate(event_list, start=1):
@@ -112,7 +112,7 @@ class SequenceFastFiz(gym.Env):
                 ball2_pocketed = ball2.isPocketed()
                 obs_sequence[i][ball2_id] = [*ball2_pos, int(ball2_pocketed)]
 
-            if i == SequenceFastFiz.EVNET_SEQUENCE_LENGTH:
+            if i == EventFastFiz.EVNET_SEQUENCE_LENGTH:
                 break
 
         return np.array(obs_sequence)

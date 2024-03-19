@@ -327,3 +327,21 @@ def ball_overlaps(ball_a: ff.Ball, ball_b: ff.Ball) -> bool:
     radius = ball_a.getRadius()
 
     return 4 * radius * radius - dx * dx - dy * dy > epsilon
+
+
+def get_ball_positions_id(table_state: ff.TableState) -> np.ndarray:
+    """
+    Get the positions of all the balls on the table.
+
+    Args:
+        table_state (ff.TableState): The table state object representing the current state of the pool table.
+
+    Returns:
+        np.ndarray: An array containing the positions of all the balls.
+    """
+    balls = []
+    for i in range(table_state.getNumBalls()):
+        pos = table_state.getBall(i).getPos()
+        balls.append((i, [pos.x, pos.y]))
+    balls = np.array(balls)
+    return balls

@@ -48,3 +48,9 @@ register(
     id="PocketRLFastFiz-v0",
     entry_point="fastfiz_env.envs:PocketRLFastFiz",
 )
+
+
+register(
+    id="SequenceFastFiz-v0",
+    entry_point="fastfiz_env.envs:SequenceFastFiz",
+)

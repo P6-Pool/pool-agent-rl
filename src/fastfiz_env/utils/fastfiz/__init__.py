@@ -15,6 +15,9 @@ __all__ = [
     "randomize_table_state",
     "shot_params_from_action",
     "get_ball_positions_id",
+    "get_ball_velocity",
+    "normalize_ball_positions",
+    "normalize_ball_velocity",
     "POCKETS",
 ]
 
@@ -36,5 +39,8 @@ from .fastfiz import (
     randomize_table_state,
     shot_params_from_action,
     get_ball_positions_id,
+    get_ball_velocity,
+    normalize_ball_positions,
+    normalize_ball_velocity,
     POCKETS,
 )

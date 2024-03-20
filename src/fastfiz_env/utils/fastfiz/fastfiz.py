@@ -307,6 +307,42 @@ def shot_params_from_action(
     return ff.ShotParams(*map_action_to_shot_params(table_state, action))
 
 
+def normalize_ball_positions(ball_positions: np.ndarray) -> np.ndarray:
+    """
+    Normalize the ball positions to be within the range [0, 1].
+
+    Args:
+        ball_positions (np.ndarray): The ball positions to be normalized.
+
+    Returns:
+        np.ndarray: The normalized ball positions.
+    """
+    width = ff.Table.TABLE_WIDTH
+    length = ff.Table.TABLE_LENGTH
+
+    return ball_positions / np.array([width, length])
+
+
+def get_ball_velocity(ball: ff.Ball) -> float:
+    """
+    Get the velocity of the given ball.
+
+    Args:
+        ball (ff.Ball): The ball.
+
+    Returns:
+        np.ndarray: The velocity of the ball.
+    """
+    vel = ball.getVelocity()
+    return np.hypot(vel.x, vel.y)
+
+
+def normalize_ball_velocity(velocity: float) -> np.ndarray:
+    scale = 1.580  # Estimated maximum velocity of a ball scale
+    max_velocity = ff.TableState.MAX_VELOCITY * scale
+    return velocity / max_velocity
+
+
 def ball_overlaps(ball_a: ff.Ball, ball_b: ff.Ball) -> bool:
     """
     Check if two balls overlap.

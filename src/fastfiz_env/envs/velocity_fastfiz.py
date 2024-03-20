@@ -8,6 +8,9 @@ from ..utils.fastfiz import (
     get_ball_positions,
     num_balls_in_play,
     get_ball_positions_id,
+    get_ball_velocity,
+    normalize_ball_positions,
+    normalize_ball_velocity,
 )
 from ..utils import RewardFunction, DefaultReward
 from typing import Optional
@@ -18,8 +21,8 @@ class VelocityFastFiz(gym.Env):
     """Base class for FastFiz environments."""
 
     EPSILON_THETA = 0.001  # To avoid max theta (from FastFiz.h)
-    TOTAL_BALLS = 16  # Including the cue ball
     EVNET_SEQUENCE_LENGTH = 100
+    TOTAL_BALLS = 16  # Including the cue ball
 
     def __init__(
         self, reward_function: RewardFunction = DefaultReward, num_balls: int = 16
@@ -47,7 +50,7 @@ class VelocityFastFiz(gym.Env):
 
         self.table_state = create_table_state(self.num_balls)
         self.reward.reset(self.table_state)
-        observation = self.get_observation(self.table_state, [])
+        observation = self._get_observation(self.table_state, [])
         info = self._get_info()
 
         return observation, info
@@ -67,7 +70,7 @@ class VelocityFastFiz(gym.Env):
             shot = self.table_state.executeShot(shot_params)
             event_list = shot.getEventList()
 
-        observation = self.get_observation(prev_table_state, event_list)
+        observation = self._get_observation(prev_table_state, event_list)
         reward = self.reward.get_reward(
             prev_table_state, self.table_state, impossible_shot
         )
@@ -83,18 +86,27 @@ class VelocityFastFiz(gym.Env):
         """
         raise NotImplementedError("This method must be implemented")
 
+    def _get_observation(
+        self, prev_table_state: ff.TableState, event_list: ff.EventVector
+    ):
+        return VelocityFastFiz.get_observation(
+            prev_table_state, self.table_state, event_list
+        )
+
     @staticmethod
-    def get_observation(prev_table_state: ff.TableState, event_list: ff.EventVector):
-        ball_positions = get_ball_positions(prev_table_state)
+    def get_observation(
+        prev_table_state: ff.TableState,
+        table_state: ff.TableState,
+        event_list: ff.EventVector,
+    ):
+        initial_event_seq = VelocityFastFiz.event_sequence_from_table_state(
+            prev_table_state
+        )
+        obs_sequence = np.zeros(
+            (VelocityFastFiz.EVNET_SEQUENCE_LENGTH, VelocityFastFiz.TOTAL_BALLS, 4)
+        )
 
-        event_seq = []
-        for i, ball in enumerate(ball_positions):
-            pocketed = prev_table_state.getBall(i).isPocketed()
-            event_seq.append([*ball, 0, int(pocketed)])
-
-        obs_sequence = np.zeros((VelocityFastFiz.EVNET_SEQUENCE_LENGTH, 16, 4))
-
-        obs_sequence[0] = event_seq
+        obs_sequence[0] = initial_event_seq
         for i, event in enumerate(event_list, start=1):
             obs_sequence[i] = obs_sequence[i - 1]
             event: ff.Event = event
@@ -105,25 +117,39 @@ class VelocityFastFiz(gym.Env):
             ball1_pocketed = ball1.isPocketed()
             ball1_pos = (ball1.getPos().x, ball1.getPos().y)
             ball2_pos = (ball2.getPos().x, ball2.getPos().y)
-            ball1_vel = ball1.getVelocity()
-            ball2_vel = ball2.getVelocity()
-            ball1_speed = np.hypot(ball1_vel.x, ball1_vel.y)
-            ball2_speed = np.hypot(ball2_vel.x, ball2_vel.y)
+            ball1_vel = normalize_ball_velocity(get_ball_velocity(ball1))
+            ball2_vel = normalize_ball_velocity(get_ball_velocity(ball2))
 
-            obs_sequence[i][ball1_id] = [*ball1_pos, ball1_speed, int(ball1_pocketed)]
+            obs_sequence[i][ball1_id] = [
+                *normalize_ball_positions(ball1_pos),
+                ball1_vel,
+                int(ball1_pocketed),
+            ]
 
             if ball2_id != ff.Ball.UNKNOWN_ID:
                 ball2_pocketed = ball2.isPocketed()
                 obs_sequence[i][ball2_id] = [
-                    *ball2_pos,
-                    ball2_speed,
+                    *normalize_ball_positions(ball2_pos),
+                    ball2_vel,
                     int(ball2_pocketed),
                 ]
-
-            if i == VelocityFastFiz.EVNET_SEQUENCE_LENGTH:
+            if i == VelocityFastFiz.EVNET_SEQUENCE_LENGTH - 1:
+                final_event_seq = VelocityFastFiz.event_sequence_from_table_state(
+                    table_state
+                )
+                obs_sequence[i] = final_event_seq
                 break
 
-        return np.array(obs_sequence)
+        return obs_sequence
+
+    @staticmethod
+    def event_sequence_from_table_state(table_state: ff.TableState) -> np.ndarray:
+        ball_positions = normalize_ball_positions(get_ball_positions(table_state))
+        event_seq = np.zeros((VelocityFastFiz.TOTAL_BALLS, 4))
+        for i, ball in enumerate(ball_positions):
+            pocketed = table_state.getBall(i).isPocketed()
+            event_seq[i] = [*ball, 0, int(pocketed)]
+        return event_seq
 
     def _get_info(self):
         return {
@@ -155,13 +181,17 @@ class VelocityFastFiz(gym.Env):
         table = self.table_state.getTable()
 
         lower = np.full((self.TOTAL_BALLS, 4), [0, 0, 0, 0])
+        # upper = np.full(
+        #     (self.TOTAL_BALLS, 4),
+        #     [table.TABLE_WIDTH, table.TABLE_LENGTH, self.table_state.MAX_VELOCITY, 1],
+        # )
         upper = np.full(
             (self.TOTAL_BALLS, 4),
-            [table.TABLE_WIDTH, table.TABLE_LENGTH, self.table_state.MAX_VELOCITY, 1],
+            [1, 1, 1, 1],
         )
         # Outerbox is shape (inner_box,10) inner boxes
-        lower = np.full((self.EVNET_SEQUENCE_LENGTH, 16, 4), lower)
-        upper = np.full((self.EVNET_SEQUENCE_LENGTH, 16, 4), upper)
+        lower = np.full((self.EVNET_SEQUENCE_LENGTH, self.TOTAL_BALLS, 4), lower)
+        upper = np.full((self.EVNET_SEQUENCE_LENGTH, self.TOTAL_BALLS, 4), upper)
         outer_box = spaces.Box(
             low=lower,
             high=upper,

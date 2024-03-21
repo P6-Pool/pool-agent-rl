@@ -59,3 +59,8 @@ register(
     id="VelocityFastFiz-v0",
     entry_point="fastfiz_env.envs:VelocityFastFiz",
 )
+
+register(
+    id="SimpleFastFiz-v0",
+    entry_point="fastfiz_env.envs:SimpleFastFiz",
+)

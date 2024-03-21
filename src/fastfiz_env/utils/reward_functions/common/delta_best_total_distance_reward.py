@@ -1,5 +1,5 @@
 from ..reward_function import RewardFunction
-from ....utils.fastfiz import (
+from ...fastfiz import (
     distances_to_closest_pocket,
     get_ball_positions,
     num_balls_in_play,
@@ -8,9 +8,9 @@ from ....utils.fastfiz import (
 import numpy as np
 
 
-class BestTotalDistanceReward(RewardFunction):
+class DeltaBestTotalDistanceReward(RewardFunction):
     """
-    Reward function that gives a reward based on the best total distance of the balls.
+    Reward function that gives a reward based on the delta of the best total distance of the balls.
     """
 
     def reset(self, table_state) -> None:

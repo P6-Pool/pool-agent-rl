@@ -117,11 +117,11 @@ class VelocityFastFiz(gym.Env):
             ball1_pocketed = ball1.isPocketed()
             ball1_pos = (ball1.getPos().x, ball1.getPos().y)
             ball2_pos = (ball2.getPos().x, ball2.getPos().y)
-            ball1_vel = normalize_ball_velocity(get_ball_velocity(ball1))
-            ball2_vel = normalize_ball_velocity(get_ball_velocity(ball2))
+            ball1_vel = get_ball_velocity(ball1)
+            ball2_vel = get_ball_velocity(ball2)
 
             obs_sequence[i][ball1_id] = [
-                *normalize_ball_positions(ball1_pos),
+                *ball1_pos,
                 ball1_vel,
                 int(ball1_pocketed),
             ]
@@ -129,7 +129,7 @@ class VelocityFastFiz(gym.Env):
             if ball2_id != ff.Ball.UNKNOWN_ID:
                 ball2_pocketed = ball2.isPocketed()
                 obs_sequence[i][ball2_id] = [
-                    *normalize_ball_positions(ball2_pos),
+                    *ball2_pos,
                     ball2_vel,
                     int(ball2_pocketed),
                 ]

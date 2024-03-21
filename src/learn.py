@@ -14,21 +14,21 @@ import os
 from torch import nn as nn
 
 params = {
-    "n_steps": 2048,
-    "batch_size": 64,
+    "n_steps": 10000,
+    "batch_size": 5000,
     "gamma": 0.9999,
-    "learning_rate": 0.0007350588182212963,
-    "ent_coef": 0.00014455517747388256,
+    "learning_rate": 0.0001,
+    "ent_coef": 0.00015,
     "clip_range": 0.2,
     "n_epochs": 1,
-    "gae_lambda": 0.92,
+    "gae_lambda": 0.90,
     "max_grad_norm": 0.3,
-    "vf_coef": 0.9179505500616013,
+    "vf_coef": 0.90,
     "sde_sample_freq": 256,
     "policy_kwargs": dict(
-        log_std_init=0.6144189947543124,
+        log_std_init=0.60,
         net_arch=dict(pi=[64, 64], vf=[64, 64]),
-        activation_fn=nn.Tanh,
+        activation_fn=nn.ReLU,
         ortho_init=False,
     ),
 }
@@ -48,7 +48,7 @@ else:
 
 BALLS = 2
 
-MODEL_NAME = f"ppo-v{VERSION}-b{BALLS}-vel-norm"
+MODEL_NAME = f"ppo-v{VERSION}-b{BALLS}-batch-size"
 TB_LOGS_DIR = "logs/tb_logs/"
 LOGS_DIR = f"logs/{MODEL_NAME}"
 MODEL_DIR = f"models/{MODEL_NAME}/"
@@ -81,7 +81,7 @@ def make_env():
 
 
 env = VecNormalize(
-    make_vec_env(make_env, n_envs=2), training=True, norm_obs=True, norm_reward=True
+    make_vec_env(make_env, n_envs=4), training=True, norm_obs=True, norm_reward=True
 )
 
 # env = make_env()
@@ -91,7 +91,7 @@ model = PPO(
     env,
     verbose=1,
     tensorboard_log=TB_LOGS_DIR,
-    # **params,
+    **params,
 )
 
 

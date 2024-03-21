@@ -181,14 +181,14 @@ class VelocityFastFiz(gym.Env):
         table = self.table_state.getTable()
 
         lower = np.full((self.TOTAL_BALLS, 4), [0, 0, 0, 0])
-        # upper = np.full(
-        #     (self.TOTAL_BALLS, 4),
-        #     [table.TABLE_WIDTH, table.TABLE_LENGTH, self.table_state.MAX_VELOCITY, 1],
-        # )
         upper = np.full(
             (self.TOTAL_BALLS, 4),
-            [1, 1, 1, 1],
+            [table.TABLE_WIDTH, table.TABLE_LENGTH, self.table_state.MAX_VELOCITY, 1],
         )
+        # upper = np.full(
+        #     (self.TOTAL_BALLS, 4),
+        #     [1, 1, 1, 1],
+        # )
         # Outerbox is shape (inner_box,10) inner boxes
         lower = np.full((self.EVNET_SEQUENCE_LENGTH, self.TOTAL_BALLS, 4), lower)
         upper = np.full((self.EVNET_SEQUENCE_LENGTH, self.TOTAL_BALLS, 4), upper)

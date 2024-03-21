@@ -13,7 +13,7 @@ from fastfiz_env.utils.reward_functions.common import *
 import os
 from torch import nn as nn
 
-params = {
+_params = {
     "n_steps": 10000,
     "batch_size": 5000,
     "gamma": 0.9999,
@@ -31,6 +31,11 @@ params = {
         activation_fn=nn.ReLU,
         ortho_init=False,
     ),
+}
+
+params = {
+    "n_steps": 10000,
+    "batch_size": 5000,
 }
 
 
@@ -106,7 +111,7 @@ checkpoint_callback = CheckpointCallback(
 eval_callback = EvalCallback(
     eval_env=env,
     n_eval_episodes=10,
-    eval_freq=2500,
+    eval_freq=25000,
     log_path=LOGS_DIR,
     best_model_save_path=BEST_MODEL_DIR,
 )

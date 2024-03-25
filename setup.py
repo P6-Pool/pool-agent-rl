@@ -9,6 +9,7 @@ setup(
     version="0.0.1",
     license="MIT",
     install_requires=requirements,
+    test_requires=["pytest"],
     packages=find_packages(where="src"),
     package_dir={"": "src"},
 )

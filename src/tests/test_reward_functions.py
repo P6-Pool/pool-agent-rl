@@ -63,11 +63,11 @@ class TestRewardFunctions(unittest.TestCase):
         self.assertEqual(reward.get_reward(table_state, table_state, False), 0)
         self.assertEqual(reward.get_reward(table_state, table_state, True), 1)
 
-    def test_best_total_distance_reward(self):
+    def test_delta_best_total_distance_reward(self):
         # Pocket: [0.,  1.118]
         prev_table_state = create_table_state(2)
         prev_table_state.setBall(1, ff.Ball.STATIONARY, ff.Point(0.5, 1.118))
-        reward = BestDeltaDistanceReward()
+        reward = DeltaBestTotalDistanceReward()
         reward.reset(prev_table_state)
 
         table_state = create_table_state(2)
@@ -106,7 +106,7 @@ class TestRewardFunctions(unittest.TestCase):
     def test_combined_reward(self):
         rewards_functions = [
             StepPocketedReward(),
-            BestDeltaDistanceReward(),
+            DeltaBestTotalDistanceReward(),
             GameWonReward(),
             ImpossibleShotReward(),
             CueBallNotMovedReward(),

@@ -1,34 +1,32 @@
 import numpy as np
 from gymnasium import spaces
-import gymnasium as gym
-import fastfiz as ff
 from typing import Optional
-from ..utils.fastfiz import create_random_table_state, get_ball_positions, num_balls_pocketed, distances_to_closest_pockets
+from ..utils.fastfiz import (
+    create_random_table_state,
+    get_ball_positions,
+)
+from ..utils import RewardFunction, DefaultReward
 from . import BaseRLFastFiz
-
-# Reward weights
-RW_GAME_WON = 100
-RW_BALL_POCKETED = 5
-RW_SHOT_MADE = -1
-RW_CUE_BALL_POCKETED = -100
-RW_IMPOSSIBLE_SHOT = -100
-RW_CUE_BALL_NOT_MOVED = -100
 
 
 class PocketRLFastFiz(BaseRLFastFiz):
     """FastFiz environment with random initial state, used for reinforcemet learning. This environment also observers if a ball is pocketed."""
 
-    def __init__(self, num_balls: Optional[int] = 15, ) -> None:
-        super().__init__(num_balls=num_balls)
+    def __init__(
+        self,
+        reward_function: RewardFunction = DefaultReward,
+        num_balls: int = 16,
+    ) -> None:
+        super().__init__(reward_function=reward_function, num_balls=num_balls)
         self.observation_space = self._observation_space()
         self.action_space = self._action_space()
 
-    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> tuple[np.ndarray, dict]:
+    def reset(
+        self, *, seed: Optional[int] = None, options: Optional[dict] = None
+    ) -> tuple[np.ndarray, dict]:
         super().reset(seed=seed)
 
         self.table_state = create_random_table_state(self.num_balls, seed=seed)
-        self.min_dist = distances_to_closest_pockets(get_ball_positions(self.table_state))[
-            1:self.num_balls]
 
         observation = self._get_observation()
         info = self._get_info()
@@ -49,34 +47,6 @@ class PocketRLFastFiz(BaseRLFastFiz):
                 observation.append([-1, -1, 0])
 
         return np.array(observation)
-
-    def _get_reward(self, prev_table_state: ff.TableState, possible_shot: bool) -> float:
-        if self._game_won():
-            return RW_GAME_WON
-
-        if self.table_state.getBall(0).isPocketed():
-            return RW_CUE_BALL_POCKETED
-
-        if not possible_shot:
-            return RW_IMPOSSIBLE_SHOT
-
-        if self.table_state.getBall(0).getPos() == prev_table_state.getBall(0).getPos():
-            return RW_CUE_BALL_NOT_MOVED
-
-        prev_pocketed = num_balls_pocketed(prev_table_state)
-        pocketed = num_balls_pocketed(self.table_state)
-        step_pocketed = pocketed - prev_pocketed
-
-        reward = step_pocketed * RW_BALL_POCKETED
-
-        new_min_dist = distances_to_closest_pockets(
-            get_ball_positions(self.table_state))[1:self.num_balls]
-
-        if sum(new_min_dist) < sum(self.min_dist):
-            reward += 1
-
-        reward += RW_SHOT_MADE
-        return reward
 
     def _get_info(self):
         return {
@@ -99,18 +69,19 @@ class PocketRLFastFiz(BaseRLFastFiz):
         """
         Get the observation space of the environment.
 
-        The observation space is a 16-dimensional box with the position of each ball:
+        The observation space is a 16-dimensional box with the position of each ball and a flag indicating if the ball is pocketed:
         - x: The x-coordinate of the ball.
         - y: The y-coordinate of the ball.
+        - pocketed: Indicates if the ball is pocketed.
 
         All values are in the range `[0, TABLE_WIDTH]` and `[0, TABLE_LENGTH]`.
         """
         table = self.table_state.getTable()
         lower = np.full((self.TOTAL_BALLS, 3), [0, 0, 0])
-        upper = np.full((self.TOTAL_BALLS, 3), [
-                        table.TABLE_WIDTH, table.TABLE_LENGTH, 1])
-        return spaces.Box(
-            low=lower, high=upper, dtype=np.float64)
+        upper = np.full(
+            (self.TOTAL_BALLS, 3), [table.TABLE_WIDTH, table.TABLE_LENGTH, 1]
+        )
+        return spaces.Box(low=lower, high=upper, dtype=np.float64)
 
     def _action_space(self):
         """

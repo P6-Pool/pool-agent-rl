@@ -1,6 +1,14 @@
 # Pool Agent Reinforcement Learning
 
-Gymnasium environments for pool, using FastFiz to simulate the physics of the game.
+Gymnasium environments for 8-ball pool, using FastFiz to simulate the physics of the game.
+
+## Preqrequisites
+
+The following packages are required to run the environment:
+
+```
+apt-get install python3-opengl
+```
 
 ## Installation
 
@@ -15,15 +23,13 @@ pip install .
 Use the environment for training a reinforcement learning agent:
 
 ```python
-import gymnasium as gym
 from stable_baselines3 import PPO
 import fastfiz_env
+from fastfiz_env.utils import DefaultReward
 
+env = fastfiz_env.make("BaseRLFastFiz-v0", reward_function=DefaultReward, num_balls=2)
 
-env = gym.make("BaseRLFastFiz-v0", num_balls=2, max_episode_steps=100)
+model = PPO("MlpPolicy", env)
 
-model = PPO("MlpPolicy", env, verbose=1)
-
-model.learn(total_timesteps=10000)
-
+model.learn(total_timesteps=10_000)
 ```

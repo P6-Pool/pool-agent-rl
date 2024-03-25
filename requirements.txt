@@ -3,6 +3,7 @@ p5 @ git+https://github.com/P6-pool/p5.git@19b96bc00be29d624982c6ecee23fba104457
 gymnasium==0.29.1
 stable-baselines3==2.2.1
 tensorboard==2.16.2
+tensorflow==2.16.1
 vectormath==0.2.2
 tqdm==4.66.2
 rich==13.7.1

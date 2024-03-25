@@ -2,12 +2,20 @@
 
 Gymnasium environments for 8-ball pool, using FastFiz to simulate the physics of the game.
 
+## Preqrequisites
+
+The following packages are required to run the environment:
+
+```
+apt-get install python3-opengl
+```
+
 ## Installation
 
 Install the package using the following command:
 
 ```
-pip install -e .
+pip install .
 ```
 
 ## Usage

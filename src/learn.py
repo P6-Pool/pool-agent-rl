@@ -1,5 +1,5 @@
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.vec_env import VecNormalize
+from stable_baselines3.common.vec_env import VecNormalize, SubprocVecEnv
 from stable_baselines3.common.callbacks import (
     CheckpointCallback,
     EvalCallback,
@@ -11,13 +11,6 @@ import fastfiz_env
 from fastfiz_env.utils import CombinedReward
 from fastfiz_env.utils.reward_functions.common import *
 import os
-
-
-params = {
-    "n_steps": 10000,
-    "batch_size": 5000,
-}
-
 
 # Get next version
 if os.path.exists("models/"):
@@ -31,9 +24,15 @@ if os.path.exists("models/"):
 else:
     VERSION = 1
 
-BALLS = 4
+params = {
+    "n_steps": 10000,
+    "batch_size": 5000,
+}
 
-MODEL_NAME = f"ppo-v{VERSION}-b{BALLS}-batch-size"
+
+BALLS = 2
+ENV_NAME = "SimpleFastFiz-v0"
+MODEL_NAME = f"ppo-v{VERSION}-{ENV_NAME.split('FastFiz')[0].lower()}-{BALLS}_balls-{params['n_steps']}_steps-{params['batch_size']}_batch"
 TB_LOGS_DIR = "logs/tb_logs/"
 LOGS_DIR = f"logs/{MODEL_NAME}"
 MODEL_DIR = f"models/{MODEL_NAME}/"
@@ -65,7 +64,7 @@ reward_function = CombinedReward(rewards_functions, reward_weights, short_circui
 
 def make_env():
     return fastfiz_env.make(
-        "SimpleFastFiz-v0",
+        ENV_NAME,
         reward_function=reward_function,
         num_balls=BALLS,
         max_episode_steps=100,
@@ -74,7 +73,15 @@ def make_env():
 
 
 env = VecNormalize(
-    make_vec_env(make_env, n_envs=4), training=True, norm_obs=True, norm_reward=True
+    make_vec_env(
+        make_env,
+        n_envs=4,
+        vec_env_cls=SubprocVecEnv,
+        vec_env_kwargs={"start_method": "fork"},
+    ),
+    training=True,
+    norm_obs=True,
+    norm_reward=True,
 )
 
 

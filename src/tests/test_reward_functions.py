@@ -67,7 +67,7 @@ class TestRewardFunctions(unittest.TestCase):
         # Pocket: [0.,  1.118]
         prev_table_state = create_table_state(2)
         prev_table_state.setBall(1, ff.Ball.STATIONARY, ff.Point(0.5, 1.118))
-        reward = BestTotalDistanceReward()
+        reward = BestDeltaDistanceReward()
         reward.reset(prev_table_state)
 
         table_state = create_table_state(2)
@@ -106,7 +106,7 @@ class TestRewardFunctions(unittest.TestCase):
     def test_combined_reward(self):
         rewards_functions = [
             StepPocketedReward(),
-            BestTotalDistanceReward(),
+            BestDeltaDistanceReward(),
             GameWonReward(),
             ImpossibleShotReward(),
             CueBallNotMovedReward(),

@@ -290,7 +290,7 @@ def map_action_to_shot_params(
     phi = np.interp(action[3], [-1, 1], [0, 360])
     v = np.interp(action[4], [-1, 1], [0, 2])
     # v = np.interp(action[4], [-1, 1], [0, table_state.MAX_VELOCITY])
-    return [a, b, theta, phi, v]
+    return np.array([a, b, theta, phi, v], dtype=np.float64)
 
 
 def shot_params_from_action(
@@ -383,3 +383,14 @@ def get_ball_positions_id(table_state: ff.TableState) -> np.ndarray:
         balls.append((i, [pos.x, pos.y]))
     balls = np.array(balls)
     return balls
+
+
+def is_pocketed_state(state: int) -> bool:
+    return (
+        state == ff.Ball.POCKETED_NE
+        or state == ff.Ball.POCKETED_NW
+        or state == ff.Ball.POCKETED_E
+        or state == ff.Ball.POCKETED_W
+        or state == ff.Ball.POCKETED_SE
+        or state == ff.Ball.POCKETED_SW
+    )

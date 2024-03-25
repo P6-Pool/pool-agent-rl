@@ -8,30 +8,10 @@ from stable_baselines3.common.callbacks import (
 from stable_baselines3 import PPO
 from stable_baselines3.ppo.policies import MlpPolicy
 import fastfiz_env
-from fastfiz_env.utils import DefaultReward, CombinedReward
+from fastfiz_env.utils import CombinedReward
 from fastfiz_env.utils.reward_functions.common import *
 import os
-from torch import nn as nn
 
-_params = {
-    "n_steps": 10000,
-    "batch_size": 5000,
-    "gamma": 0.9999,
-    "learning_rate": 0.0001,
-    "ent_coef": 0.00015,
-    "clip_range": 0.2,
-    "n_epochs": 1,
-    "gae_lambda": 0.90,
-    "max_grad_norm": 0.3,
-    "vf_coef": 0.90,
-    "sde_sample_freq": 256,
-    "policy_kwargs": dict(
-        log_std_init=0.60,
-        net_arch=dict(pi=[64, 64], vf=[64, 64]),
-        activation_fn=nn.ReLU,
-        ortho_init=False,
-    ),
-}
 
 params = {
     "n_steps": 10000,
@@ -51,7 +31,7 @@ if os.path.exists("models/"):
 else:
     VERSION = 1
 
-BALLS = 2
+BALLS = 4
 
 MODEL_NAME = f"ppo-v{VERSION}-b{BALLS}-batch-size"
 TB_LOGS_DIR = "logs/tb_logs/"
@@ -62,14 +42,22 @@ BEST_MODEL_DIR = f"models/{MODEL_NAME}/best/"
 
 rewards_functions = [
     StepPocketedReward(),
-    BestTotalDistanceReward(),
+    DeltaBestTotalDistanceReward(),
     GameWonReward(),
     ImpossibleShotReward(),
     CueBallNotMovedReward(),
     CueBallPocketedReward(),
     ConstantReward(),
 ]
-reward_weights = [1, 0.5, 10, -10, -10, -10, -0.1]
+reward_weights = [
+    1,
+    0.2,
+    10,
+    -10,
+    -10,
+    -10,
+    -0.1,
+]
 
 
 reward_function = CombinedReward(rewards_functions, reward_weights, short_circuit=True)
@@ -77,8 +65,8 @@ reward_function = CombinedReward(rewards_functions, reward_weights, short_circui
 
 def make_env():
     return fastfiz_env.make(
-        "VelocityFastFiz-v0",
-        reward_function=DefaultReward,
+        "SimpleFastFiz-v0",
+        reward_function=reward_function,
         num_balls=BALLS,
         max_episode_steps=100,
         disable_env_checker=False,
@@ -89,7 +77,6 @@ env = VecNormalize(
     make_vec_env(make_env, n_envs=4), training=True, norm_obs=True, norm_reward=True
 )
 
-# env = make_env()
 
 model = PPO(
     MlpPolicy,
@@ -124,7 +111,9 @@ try:
         total_timesteps=50_000_000,
         callback=callback,
         tb_log_name=MODEL_NAME,
+        progress_bar=True,
     )
+
 except KeyboardInterrupt:
     print(f"Training interrupted. Saving model: {MODEL_DIR + MODEL_NAME}")
     model.save(MODEL_DIR + MODEL_NAME)

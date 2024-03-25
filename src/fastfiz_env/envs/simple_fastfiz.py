@@ -11,11 +11,12 @@ from ..utils.fastfiz import (
     get_ball_velocity,
     normalize_ball_positions,
     normalize_ball_velocity,
+    is_pocketed_state,
+    GameBall,
 )
 from ..utils import RewardFunction, DefaultReward
 from typing import Optional
 import warnings
-from fastfiz_renderer import GameBall
 import vectormath as vmath
 
 
@@ -52,7 +53,7 @@ class SimpleFastFiz(gym.Env):
 
         self.table_state = create_table_state(self.num_balls)
         self.reward.reset(self.table_state)
-        observation = self._get_observation(self.table_state, [])
+        observation = self._compute_observation(self.table_state, None)
         info = self._get_info()
 
         return observation, info
@@ -67,11 +68,11 @@ class SimpleFastFiz(gym.Env):
 
         impossible_shot = not self._possible_shot(shot_params)
 
-        event_list = []
+        shot = None
         if not impossible_shot:
             shot = self.table_state.executeShot(shot_params)
 
-        observation = self._compute_observation(prev_table_state, event_list)
+        observation = self._compute_observation(prev_table_state, shot)
         reward = self.reward.get_reward(
             prev_table_state, self.table_state, impossible_shot
         )
@@ -205,7 +206,7 @@ class SimpleFastFiz(gym.Env):
         outer_box = spaces.Box(
             low=lower,
             high=upper,
-            dtype=np.float64,
+            dtype=np.float32,
         )
 
         return outer_box
@@ -226,7 +227,7 @@ class SimpleFastFiz(gym.Env):
         return spaces.Box(
             low=np.array([0.0, 0.0, -1, -1, -1]),
             high=np.array([0.0, 0.0, 1, 1, 1]),
-            dtype=np.float64,
+            dtype=np.float32,
         )
 
     def _possible_shot(self, shot_params: ff.ShotParams) -> bool:
@@ -241,23 +242,23 @@ class SimpleFastFiz(gym.Env):
     def _compute_observation(
         self, prev_table_state: ff.TableState, shot: ff.Shot
     ) -> np.ndarray:
-        frames_seq = np.zeros((frames, self.TOTAL_BALLS, 4))
-
-        table: ff.Table = self.table_state.getTable()
-        rolling = table.MU_ROLLING
-        sliding = table.MU_SLIDING
-        gravity = table.g
         frames = self.EVNET_SEQUENCE_LENGTH
-        total_time = shot.getDuration()
-        interval = total_time / frames
+        frames_seq = np.zeros((frames, self.TOTAL_BALLS, 4), dtype=np.float32)
 
         if shot is None:
             ball_positions = get_ball_positions(self.table_state)
             for frame in range(frames):
                 for i, pos in enumerate(ball_positions):
-                    pocketed = not self.table_state.getBall(i).isInPlay()
-                    frames_seq[frame][i] = [*pos, 0, 0, pocketed]
+                    pocketed = self.table_state.getBall(i).isPocketed()
+                    frames_seq[frame][i] = [*pos, 0, pocketed]
             return frames_seq
+
+        table: ff.Table = self.table_state.getTable()
+        rolling = table.MU_ROLLING
+        sliding = table.MU_SLIDING
+        gravity = table.g
+        total_time = shot.getDuration()
+        interval = total_time / (frames - 1)
 
         game_balls: list[GameBall] = []
         for i in range(self.num_balls):
@@ -269,11 +270,11 @@ class SimpleFastFiz(gym.Env):
             time = frame * interval
             for gb in game_balls:
                 gb.update(time, shot, sliding, rolling, gravity)
-                pocketed = gb.state == ff.Ball.POCKETED
+                pocketed = is_pocketed_state(gb.state)
                 frames_seq[frame][gb.number] = [
                     gb.position.x,
                     gb.position.y,
-                    gb.velocity,
+                    normalize_ball_velocity(np.hypot(gb.velocity.x, gb.velocity.y)),
                     pocketed,
                 ]
         return frames_seq

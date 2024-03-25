@@ -18,7 +18,8 @@ __all__ = [
     "get_ball_velocity",
     "normalize_ball_positions",
     "normalize_ball_velocity",
-    "POCKETS",
+    "is_pocketed_state" "POCKETS",
+    "GameBall",
 ]
 
 
@@ -42,5 +43,8 @@ from .fastfiz import (
     get_ball_velocity,
     normalize_ball_positions,
     normalize_ball_velocity,
+    is_pocketed_state,
     POCKETS,
 )
+
+from .renderer import GameBall

@@ -1,5 +1,5 @@
-fastfiz @ git+https://github.com/williamwoldum/fastfiz.git@2af8aed22bec1faeb5ac92b98b0751a0023f3fb7
-p5 @ git+https://github.com/williamwoldum/p5.git@19b96bc00be29d624982c6ecee23fba104457277
+fastfiz @ git+https://github.com/P6-pool/fastfiz.git@2af8aed22bec1faeb5ac92b98b0751a0023f3fb7
+p5 @ git+https://github.com/P6-pool/p5.git@19b96bc00be29d624982c6ecee23fba104457277
 gymnasium==0.29.1
 stable-baselines3==2.2.1
 tensorboard==2.16.2

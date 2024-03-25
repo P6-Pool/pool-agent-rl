@@ -3,11 +3,9 @@ import gymnasium as gym
 import fastfiz as ff
 from gymnasium import spaces
 from ..utils.fastfiz import (
-    create_table_state,
     shot_params_from_action,
     get_ball_positions,
-    num_balls_in_play,
-    get_ball_positions_id,
+    create_random_table_state,
     get_ball_velocity,
     normalize_ball_positions,
     normalize_ball_velocity,
@@ -39,7 +37,7 @@ class SimpleFastFiz(gym.Env):
 
         self.num_balls = num_balls
         self.reward = reward_function
-        self.table_state = create_table_state(self.num_balls)
+        self.table_state = create_random_table_state(self.num_balls)
         self.observation_space = self._observation_space()
         self.action_space = self._action_space()
 
@@ -51,7 +49,7 @@ class SimpleFastFiz(gym.Env):
         """
         super().reset(seed=seed)
 
-        self.table_state = create_table_state(self.num_balls)
+        self.table_state = create_random_table_state(self.num_balls, seed=seed)
         self.reward.reset(self.table_state)
         observation = self._compute_observation(self.table_state, None)
         info = self._get_info()

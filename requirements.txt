@@ -7,3 +7,5 @@ vectormath==0.2.2
 tqdm==4.66.2
 rich==13.7.1
 glfw==2.7.0
+PyOpenGL==3.1.6
+PyOpenGL-accelerate==3.1.7

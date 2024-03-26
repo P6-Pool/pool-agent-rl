@@ -63,16 +63,16 @@ class VelocityFastFiz(gym.Env):
 
         shot_params = shot_params_from_action(self.table_state, action)
 
-        impossible_shot = not self._possible_shot(shot_params)
+        possible_shot = self._possible_shot(shot_params)
 
         event_list = []
-        if not impossible_shot:
+        if possible_shot:
             shot = self.table_state.executeShot(shot_params)
             event_list = shot.getEventList()
 
         observation = self._get_observation(prev_table_state, event_list)
         reward = self.reward.get_reward(
-            prev_table_state, self.table_state, impossible_shot
+            prev_table_state, self.table_state, possible_shot
         )
         terminated = self._is_terminal_state()
         truncated = False
@@ -99,11 +99,23 @@ class VelocityFastFiz(gym.Env):
         table_state: ff.TableState,
         event_list: ff.EventVector,
     ):
+        table: ff.Table = table_state.getTable()
+        
+        pockets = [
+            table.SW, table.W, table.NW, table.NE, table.E, table.SE
+        ]
+        
+        pocket_coords = []
+        for pocket in pockets:
+            pocket_center: ff.Point = table.getPocketCenter(pocket)
+            pocket_coords.append(pocket_center.x)
+            pocket_coords.append(pocket_center.y)
+
         initial_event_seq = VelocityFastFiz.event_sequence_from_table_state(
-            prev_table_state
+            prev_table_state, pocket_coords
         )
         obs_sequence = np.zeros(
-            (VelocityFastFiz.EVNET_SEQUENCE_LENGTH, VelocityFastFiz.TOTAL_BALLS, 4)
+            (VelocityFastFiz.EVNET_SEQUENCE_LENGTH, VelocityFastFiz.TOTAL_BALLS, 16)
         )
 
         obs_sequence[0] = initial_event_seq
@@ -124,6 +136,7 @@ class VelocityFastFiz(gym.Env):
                 *ball1_pos,
                 ball1_vel,
                 int(ball1_pocketed),
+                *pocket_coords
             ]
 
             if ball2_id != ff.Ball.UNKNOWN_ID:
@@ -132,10 +145,12 @@ class VelocityFastFiz(gym.Env):
                     *ball2_pos,
                     ball2_vel,
                     int(ball2_pocketed),
+                    *pocket_coords
                 ]
+
             if i == VelocityFastFiz.EVNET_SEQUENCE_LENGTH - 1:
                 final_event_seq = VelocityFastFiz.event_sequence_from_table_state(
-                    table_state
+                    table_state, *pocket_coords
                 )
                 obs_sequence[i] = final_event_seq
                 break
@@ -143,12 +158,12 @@ class VelocityFastFiz(gym.Env):
         return obs_sequence
 
     @staticmethod
-    def event_sequence_from_table_state(table_state: ff.TableState) -> np.ndarray:
-        ball_positions = normalize_ball_positions(get_ball_positions(table_state))
-        event_seq = np.zeros((VelocityFastFiz.TOTAL_BALLS, 4))
+    def event_sequence_from_table_state(table_state: ff.TableState, pocket_coords) -> np.ndarray:
+        ball_positions = get_ball_positions(table_state)
+        event_seq = np.zeros((VelocityFastFiz.TOTAL_BALLS, 16))
         for i, ball in enumerate(ball_positions):
             pocketed = table_state.getBall(i).isPocketed()
-            event_seq[i] = [*ball, 0, int(pocketed)]
+            event_seq[i] = [*ball, 0, int(pocketed), *pocket_coords]
         return event_seq
 
     def _get_info(self):
@@ -178,20 +193,20 @@ class VelocityFastFiz(gym.Env):
 
         All values are in the range `[0, TABLE_WIDTH]` and `[0, TABLE_LENGTH]`.
         """
-        table = self.table_state.getTable()
+        table: ff.Table = self.table_state.getTable()
+        
+        num_pockets = 6
+        pockets_coords = np.array([table.TABLE_WIDTH, table.TABLE_LENGTH] * num_pockets)
 
-        lower = np.full((self.TOTAL_BALLS, 4), [0, 0, 0, 0])
+        lower = np.zeros((self.TOTAL_BALLS, 4 + pockets_coords.size))
         upper = np.full(
-            (self.TOTAL_BALLS, 4),
-            [table.TABLE_WIDTH, table.TABLE_LENGTH, self.table_state.MAX_VELOCITY, 1],
+            (self.TOTAL_BALLS, 4 + pockets_coords.size),
+            [table.TABLE_WIDTH, table.TABLE_LENGTH, self.table_state.MAX_VELOCITY, 1, *pockets_coords],
         )
-        # upper = np.full(
-        #     (self.TOTAL_BALLS, 4),
-        #     [1, 1, 1, 1],
-        # )
+
         # Outerbox is shape (inner_box,10) inner boxes
-        lower = np.full((self.EVNET_SEQUENCE_LENGTH, self.TOTAL_BALLS, 4), lower)
-        upper = np.full((self.EVNET_SEQUENCE_LENGTH, self.TOTAL_BALLS, 4), upper)
+        lower = np.full((self.EVNET_SEQUENCE_LENGTH, self.TOTAL_BALLS, 4 + pockets_coords.size), lower)
+        upper = np.full((self.EVNET_SEQUENCE_LENGTH, self.TOTAL_BALLS, 4 + pockets_coords.size), upper)
         outer_box = spaces.Box(
             low=lower,
             high=upper,
@@ -214,7 +229,7 @@ class VelocityFastFiz(gym.Env):
         All values are in the range `[0, 1]`.
         """
         return spaces.Box(
-            low=np.array([0.0, 0.0, 0.0, 0.0, 0.0]),
+            low=np.array([0.0, 0.0, -1, -1, -1]),
             high=np.array([0.0, 0.0, 1, 1, 1]),
             dtype=np.float64,
         )

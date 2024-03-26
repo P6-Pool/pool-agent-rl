@@ -6,18 +6,24 @@ from stable_baselines3.common.callbacks import (
     CallbackList,
 )
 from stable_baselines3 import PPO
+from sb3_contrib import RecurrentPPO
+from sb3_contrib.ppo_recurrent.policies import MlpLstmPolicy
 from stable_baselines3.ppo.policies import MlpPolicy
 import fastfiz_env
 from fastfiz_env.utils import CombinedReward
 from fastfiz_env.utils.reward_functions.common import *
 import os
 
+n_envs = 1
+n_steps = 5120
+batch_size = int((n_steps * n_envs) / 2) 
 
 params = {
-    "n_steps": 10000,
-    "batch_size": 5000,
+    "n_steps": n_steps,
+    "batch_size": batch_size,
 }
 
+env_id = "VelocityFastFiz-v0"
 
 # Get next version
 if os.path.exists("models/"):
@@ -31,9 +37,9 @@ if os.path.exists("models/"):
 else:
     VERSION = 1
 
-BALLS = 4
+BALLS = 2
 
-MODEL_NAME = f"ppo-v{VERSION}-b{BALLS}-batch-size"
+MODEL_NAME = f"ppo-v{VERSION}-b{BALLS}-{env_id}"
 TB_LOGS_DIR = "logs/tb_logs/"
 LOGS_DIR = f"logs/{MODEL_NAME}"
 MODEL_DIR = f"models/{MODEL_NAME}/"
@@ -50,7 +56,7 @@ rewards_functions = [
     ConstantReward(),
 ]
 reward_weights = [
-    1,
+    5,
     0.2,
     10,
     -10,
@@ -65,42 +71,40 @@ reward_function = CombinedReward(rewards_functions, reward_weights, short_circui
 
 def make_env():
     return fastfiz_env.make(
-        "SimpleFastFiz-v0",
+        env_id,
         reward_function=reward_function,
         num_balls=BALLS,
         max_episode_steps=100,
         disable_env_checker=False,
     )
 
-
 env = VecNormalize(
-    make_vec_env(make_env, n_envs=4), training=True, norm_obs=True, norm_reward=True
+    make_vec_env(make_env, n_envs=n_envs), training=True, norm_obs=True, norm_reward=True
 )
 
-
-model = PPO(
-    MlpPolicy,
+model = RecurrentPPO(
+    MlpLstmPolicy,
     env,
     verbose=1,
     tensorboard_log=TB_LOGS_DIR,
     **params,
+    policy_kwargs=dict(enable_critic_lstm=False),
 )
 
-
 checkpoint_callback = CheckpointCallback(
-    save_freq=50_000,
-    save_path=MODEL_DIR,
-    name_prefix=MODEL_NAME,
-    save_vecnormalize=True,
+save_freq=50_000,
+save_path=MODEL_DIR,
+name_prefix=MODEL_NAME,
+save_vecnormalize=True,
 )
 
 
 eval_callback = EvalCallback(
-    eval_env=env,
-    n_eval_episodes=10,
-    eval_freq=25000,
-    log_path=LOGS_DIR,
-    best_model_save_path=BEST_MODEL_DIR,
+eval_env=env,
+n_eval_episodes=10,
+eval_freq=25000,
+log_path=LOGS_DIR,
+best_model_save_path=BEST_MODEL_DIR,
 )
 
 callback = CallbackList([checkpoint_callback, eval_callback])

@@ -283,14 +283,14 @@ def map_action_to_shot_params(
     """
     a = np.interp(action[0], [0, 0], [0, 0])
     b = np.interp(action[1], [0, 0], [0, 0])
-    theta = np.interp(action[2], [-1, 1], [15, 40])
-    # theta = np.interp(
-    #     action[2], [-1, 1], [table_state.MIN_THETA, table_state.MAX_THETA - 0.001]
-    # )
+    # theta = np.interp(action[2], [-1, 1], [15, 40])
+    theta = np.interp(
+        action[2], [-1, 1], [table_state.MIN_THETA, table_state.MAX_THETA - 0.001]
+    )
     phi = np.interp(action[3], [-1, 1], [0, 360])
-    v = np.interp(action[4], [-1, 1], [0, 2])
-    # v = np.interp(action[4], [-1, 1], [0, table_state.MAX_VELOCITY])
-    return np.array([a, b, theta, phi, v], dtype=np.float64)
+    # v = np.interp(action[4], [-1, 1], [0, 2])
+    v = np.interp(action[4], [-1, 1], [0, table_state.MAX_VELOCITY - 0.001])
+    return np.array([0, 0, theta, phi, v], dtype=np.float64)
 
 
 def shot_params_from_action(

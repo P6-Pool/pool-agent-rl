@@ -66,6 +66,8 @@ class SimpleFastFiz(gym.Env):
 
         impossible_shot = not self._possible_shot(shot_params)
 
+        print(f"Action: T: {shot_params.theta} P: {shot_params.phi} V: {shot_params.v}")
+
         shot = None
         if not impossible_shot:
             shot = self.table_state.executeShot(shot_params)

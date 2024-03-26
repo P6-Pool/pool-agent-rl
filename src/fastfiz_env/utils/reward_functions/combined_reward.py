@@ -26,6 +26,9 @@ class CombinedReward(RewardFunction):
         Returns:
             None
         """
+        assert len(reward_functions) == len(
+            weights
+        ), "Reward functions and weights must have the same length."
         self.reward_functions = reward_functions
         self.weights = weights
         self.short_circuit = short_circuit

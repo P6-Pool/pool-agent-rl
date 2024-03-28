@@ -49,7 +49,6 @@ register(
     entry_point="fastfiz_env.envs:PocketRLFastFiz",
 )
 
-
 register(
     id="EventFastFiz-v0",
     entry_point="fastfiz_env.envs:EventFastFiz",
@@ -63,4 +62,9 @@ register(
 register(
     id="SimpleFastFiz-v0",
     entry_point="fastfiz_env.envs:SimpleFastFiz",
+)
+
+register(
+    id="ImageFastFiz-v0",
+    entry_point="fastfiz_env.envs:ImageFastFiz",
 )

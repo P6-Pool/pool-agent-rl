@@ -287,8 +287,8 @@ def map_action_to_shot_params(
     # theta = np.interp(
     #     action[2], [-1, 1], [table_state.MIN_THETA, table_state.MAX_THETA - 0.001]
     # )
-    phi = np.interp(action[3], [-1, 1], [0, 360])
-    v = np.interp(action[4], [-1, 1], [0, 2])
+    phi = np.interp(action[3], [-1, 1], [0, 359])
+    v = np.interp(action[4], [-1, 1], [0, 10])
     # v = np.interp(action[4], [-1, 1], [0, table_state.MAX_VELOCITY])
     return np.array([a, b, theta, phi, v], dtype=np.float64)
 

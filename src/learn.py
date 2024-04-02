@@ -5,12 +5,13 @@ from stable_baselines3.common.callbacks import (
     EvalCallback,
     CallbackList,
 )
-from stable_baselines3 import PPO
-from sb3_contrib import RecurrentPPO
-from sb3_contrib.ppo_recurrent import MlpLstmPolicy
-
-# from stable_baselines3.ppo.policies import MlpPolicy
-from stable_baselines3.ppo.policies import MlpPolicy
+from stable_baselines3 import PPO, SAC, TD3
+import numpy as np
+from stable_baselines3.td3.policies import MlpPolicy
+from stable_baselines3.common.noise import (
+    NormalActionNoise,
+    OrnsteinUhlenbeckActionNoise,
+)
 import fastfiz_env
 from fastfiz_env.utils import CombinedReward
 from fastfiz_env.utils.reward_functions.common import *
@@ -38,10 +39,10 @@ params = {
     "batch_size": BATCH_SIZE,
 }
 
-
+MAX_EP_STEPS = 15
 BALLS = 3
-ENV_NAME = "BasicRLFastFiz-v0"
-MODEL_NAME = f"ppo_recurrent-v{VERSION}-{ENV_NAME.split('FastFiz')[0].lower()}-{BALLS}_balls-{params['n_steps']}_steps-{params['batch_size']}_batch"
+ENV_NAME = "SimpleFastFiz-v0"
+MODEL_NAME = f"td3-v{VERSION}-{ENV_NAME.split('FastFiz')[0].lower()}-{BALLS}_balls-{params['n_steps']}_steps-{params['batch_size']}_batch"
 TB_LOGS_DIR = "logs/tb_logs/"
 LOGS_DIR = f"logs/{MODEL_NAME}"
 MODEL_DIR = f"models/{MODEL_NAME}/"
@@ -50,21 +51,21 @@ BEST_MODEL_DIR = f"models/{MODEL_NAME}/best/"
 
 rewards_functions = [
     GameWonReward(),
-    StepPocketedReward(),
-    # DeltaBestTotalDistanceReward(),
-    # ImpossibleShotReward(),
+    ImpossibleShotReward(),
     CueBallNotMovedReward(),
     CueBallPocketedReward(),
+    DeltaBestTotalDistanceReward(),
+    StepPocketedReward(),
     ConstantReward(),
 ]
 reward_weights = [
-    1,
-    0.25,
-    # 0.025,
-    # 0,
-    -1,
-    -1,
-    -0.025,
+    10,
+    0,
+    0,
+    0,
+    0.025,
+    (10 / BALLS),
+    0,
 ]
 
 
@@ -76,7 +77,7 @@ def make_env():
         ENV_NAME,
         reward_function=reward_function,
         num_balls=BALLS,
-        max_episode_steps=20,
+        max_episode_steps=MAX_EP_STEPS,
         disable_env_checker=False,
     )
 
@@ -97,18 +98,14 @@ env = make_vec_env(make_env, n_envs=N_ENVS)
 
 # env = fastfiz_env.make(ENV_NAME, reward_function=reward_function, num_balls=BALLS)
 
-# n_actions = env.action_space.shape[-1]
-# action_noise = NormalActionNoise(
-#     mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions)
-# )
+action_noise = OrnsteinUhlenbeckActionNoise(
+    mean=np.zeros(env.action_space.shape),
+    sigma=float(0.5) * np.ones(env.action_space.shape),
+)
 
-model = RecurrentPPO(
-    MlpLstmPolicy,
-    env,
-    verbose=1,
-    tensorboard_log=TB_LOGS_DIR,
-    **params,
-    policy_kwargs={"enable_critic_lstm": False},
+
+model = TD3(
+    MlpPolicy, env, verbose=1, tensorboard_log=TB_LOGS_DIR, action_noise=action_noise
 )
 
 

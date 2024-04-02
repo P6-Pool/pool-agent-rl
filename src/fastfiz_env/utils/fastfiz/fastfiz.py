@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Optional
 import fastfiz as ff
+from gymnasium import spaces
 
 POCKETS = [
     ff.Table.SW,
@@ -307,6 +308,39 @@ def shot_params_from_action(
         ff.ShotParams: The shot parameters corresponding to the given action.
     """
     return ff.ShotParams(*map_action_to_shot_params(table_state, action))
+
+
+def action_to_shot(action: np.ndarray, action_space: spaces.Box) -> ff.ShotParams:
+    """
+    Maps the given action values to the corresponding action space.
+    """
+    MIN_OFFSET = 0  # -1?
+    MAX_OFFSET = 0  # 1?
+    MIN_PHI = 0
+    MAX_PHI = 360
+    MIN_THETA = ff.TableState.MIN_THETA
+    MAX_THETA = ff.TableState.MAX_THETA
+    MAX_VELOCITY = ff.TableState.MAX_VELOCITY
+
+    a = np.interp(
+        action[0], [action_space.low[0], action_space.high[0]], [MIN_OFFSET, MAX_OFFSET]
+    )
+    b = np.interp(
+        action[1], [action_space.low[1], action_space.high[1]], [MIN_OFFSET, MAX_OFFSET]
+    )
+    theta = np.interp(
+        action[2], [action_space.low[2], action_space.high[2]], [MIN_THETA, MAX_THETA]
+    )
+    phi = np.interp(
+        action[3], [action_space.low[3], action_space.high[3]], [MIN_PHI, MAX_PHI]
+    )
+    velocity = np.interp(
+        action[4], [action_space.low[4], action_space.high[4]], [0, MAX_VELOCITY]
+    )
+
+    # print(f"a: {a}, b: {b}, theta: {theta}, phi: {phi}, velocity: {velocity}")
+
+    return ff.ShotParams(a, b, theta, phi, velocity)
 
 
 def normalize_ball_positions(ball_positions: np.ndarray) -> np.ndarray:

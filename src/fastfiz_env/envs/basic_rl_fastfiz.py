@@ -7,6 +7,7 @@ from ..utils.fastfiz import (
     get_ball_positions,
     normalize_ball_positions,
     shot_params_from_action,
+    action_to_shot,
 )
 from ..utils import RewardFunction, DefaultReward
 import fastfiz as ff
@@ -15,7 +16,7 @@ import fastfiz as ff
 class BasicRLFastFiz(gym.Env):
     """FastFiz environment with random initial state, used for reinforcemet learning."""
 
-    TOTAL_BALLS = 16
+    TOTAL_BALLS = 3
 
     def __init__(
         self,
@@ -47,7 +48,8 @@ class BasicRLFastFiz(gym.Env):
         Execute an action in the environment.
         """
         prev_table_state = ff.TableState(self.table_state)
-        shot_params = shot_params_from_action(self.table_state, [0, 0, 0.65, *action])
+        action_space = self.actual_action_space({"low": [0, 0, -1], "high": [0, 0, 1]})
+        shot_params = action_to_shot([0, 0, 0.65, *action], action_space)
 
         impossible_shot = not self._possible_shot(shot_params)
 
@@ -67,11 +69,12 @@ class BasicRLFastFiz(gym.Env):
         return observation, reward, terminated, truncated, info
 
     def _get_observation(self):
-        ball_positions = get_ball_positions(self.table_state)
-        ball_positions = normalize_ball_positions(ball_positions) * 2 - 1
-        observation = np.zeros((self.TOTAL_BALLS, 3), dtype=np.float32)
+        ball_positions = get_ball_positions(self.table_state)[: self.TOTAL_BALLS]
+        ball_positions = normalize_ball_positions(ball_positions)  # Normalize to [0, 1]
+        # ball_positions = normalize_ball_positions(ball_positions) * 2 - 1 # Normalize to [-1, 1] (symmetric)
+        observation = np.zeros((self.TOTAL_BALLS, 2), dtype=np.float32)
         for i, ball_pos in enumerate(ball_positions):
-            observation[i] = [*ball_pos, not self.table_state.getBall(i).isInPlay()]
+            observation[i] = [*ball_pos]
 
         return np.array(observation)
 
@@ -92,7 +95,7 @@ class BasicRLFastFiz(gym.Env):
                 return False
         return True
 
-    def _observation_space(self):
+    def _observation_space(self) -> spaces.Box:
         """
         Get the observation space of the environment.
 
@@ -103,11 +106,11 @@ class BasicRLFastFiz(gym.Env):
         All values are in the range `[0, TABLE_WIDTH]` and `[0, TABLE_LENGTH]`.
         """
         table = self.table_state.getTable()
-        lower = np.full((self.TOTAL_BALLS, 3), [-1, -1, 0])
-        upper = np.full((self.TOTAL_BALLS, 3), [1, 1, 1])
+        lower = np.full((self.TOTAL_BALLS, 2), [0, 0])
+        upper = np.full((self.TOTAL_BALLS, 2), [1, 1])
         return spaces.Box(low=lower, high=upper, dtype=np.float32)
 
-    def _action_space(self):
+    def _action_space(self) -> spaces.Box:
         """
         Get the action space of the environment.
 
@@ -133,4 +136,14 @@ class BasicRLFastFiz(gym.Env):
         return (
             self.table_state.isPhysicallyPossible(shot_params)
             == ff.TableState.OK_PRECONDITION
+        )
+
+    def actual_action_space(self, bounds: dict[str, list[float]]) -> spaces.Box:
+        actual = {
+            "low": [*bounds["low"], *self.action_space.low],
+            "high": [*bounds["high"], *self.action_space.high],
+        }
+
+        return spaces.Box(
+            low=np.array(actual["low"]), high=np.array(actual["high"]), dtype=np.float32
         )

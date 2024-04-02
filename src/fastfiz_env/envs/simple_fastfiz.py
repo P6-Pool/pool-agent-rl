@@ -60,13 +60,18 @@ class SimpleFastFiz(gym.Env):
         """
         Execute an action in the environment.
         """
+
         prev_table_state = ff.TableState(self.table_state)
 
-        shot_params = shot_params_from_action(self.table_state, action)
+        shot_params = shot_params_from_action(self.table_state, [0, 0, *action])
 
         impossible_shot = not self._possible_shot(shot_params)
 
-        print(f"Action: T: {shot_params.theta} P: {shot_params.phi} V: {shot_params.v}")
+        # Check for nans in action
+        if np.isnan(action).any():
+            print(f"Nan in action: {action}")
+            impossible_shot = True
+        # print(f"Action: T: {shot_params.theta} P: {shot_params.phi} V: {shot_params.v}")
 
         shot = None
         if not impossible_shot:
@@ -225,8 +230,8 @@ class SimpleFastFiz(gym.Env):
         All values are in the range `[0, 1]`.
         """
         return spaces.Box(
-            low=np.array([0.0, 0.0, -1, -1, -1]),
-            high=np.array([0.0, 0.0, 1, 1, 1]),
+            low=np.array([-1, -1, -1]),
+            high=np.array([1, 1, 1]),
             dtype=np.float32,
         )
 

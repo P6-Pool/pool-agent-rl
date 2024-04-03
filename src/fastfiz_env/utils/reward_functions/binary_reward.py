@@ -38,3 +38,6 @@ class BinaryReward(RewardFunction, ABC):
             float: If the condition is met, return 1, otherwise return 0.
         """
         pass
+
+    def __str__(self) -> str:
+        return super().__str__() + f"({self.short_circuit})"

@@ -8,7 +8,7 @@ from .reward_functions import (
     BinaryReward,
     DefaultReward,
 )
-from . import fastfiz
+from . import fastfiz, features
 
 __all__ = [
     "RewardFunction",
@@ -16,4 +16,5 @@ __all__ = [
     "BinaryReward",
     "DefaultReward",
     "fastfiz",
+    "features",
 ]

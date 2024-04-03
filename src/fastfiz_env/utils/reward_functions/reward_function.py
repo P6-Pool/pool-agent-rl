@@ -39,3 +39,6 @@ class RewardFunction(ABC):
             float: The calculated reward value.
         """
         pass
+
+    def __str__(self):
+        return self.__class__.__name__

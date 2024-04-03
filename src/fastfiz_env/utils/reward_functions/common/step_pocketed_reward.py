@@ -14,6 +14,6 @@ class StepPocketedReward(RewardFunction):
         """
         Reward function that gives a reward based on the number of balls pocketed for the action.
         """
-        prev_pocketed = num_balls_pocketed(prev_table_state)
-        pocketed = num_balls_pocketed(table_state)
-        return float(pocketed - prev_pocketed)
+        prev_pocketed = num_balls_pocketed(prev_table_state, range_start=1)
+        pocketed = num_balls_pocketed(table_state, range_start=1)
+        return pocketed - prev_pocketed

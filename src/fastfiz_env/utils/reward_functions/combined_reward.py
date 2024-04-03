@@ -13,7 +13,7 @@ class CombinedReward(RewardFunction):
         reward_functions: list[RewardFunction],
         weights: list[float | int],
         *,
-        short_circuit: bool = False
+        short_circuit: bool = False,
     ) -> None:
         """
         Initialize the CombinedReward object.
@@ -68,3 +68,6 @@ class CombinedReward(RewardFunction):
                     return total_reward
 
         return total_reward
+
+    def __str__(self) -> str:
+        return f"CombinedReward({[str(reward) for reward in self.reward_functions]}, {str(self.weights)}, short_circuit={self.short_circuit})"

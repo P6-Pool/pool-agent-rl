@@ -1,3 +1,21 @@
-from .utils import deg_to_vec, vec_to_deg, vec_to_abs_deg
+from .utils import (
+    deg_to_vec,
+    vec_to_deg,
+    vec_to_abs_deg,
+    vec_length,
+    vec_normalize,
+    vec_magnitude,
+    spherical_coordinates,
+)
 
-__all__ = ["deg_to_vec", "vec_to_deg", "vec_to_abs_deg"]
+from .action import ActionSpaces, FastFizActionWrapper
+
+__all__ = [
+    "deg_to_vec",
+    "vec_to_deg",
+    "vec_to_abs_deg",
+    "vec_length",
+    "vec_normalize",
+    "ActionSpaces",
+    "FastFizActionWrapper",
+]

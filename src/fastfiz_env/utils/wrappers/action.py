@@ -1,5 +1,12 @@
 from dataclasses import dataclass
-from .utils import deg_to_vec, vec_to_abs_deg
+from .utils import (
+    deg_to_vec,
+    vec_to_abs_deg,
+    vec_length,
+    vec_normalize,
+    spherical_coordinates,
+    vec_magnitude,
+)
 from gymnasium import ActionWrapper
 from gymnasium import spaces
 import numpy as np
@@ -34,6 +41,31 @@ class ActionSpaces(Enum):
     - velocity: Derived from the 3D vector.
     """
 
+    NORM_PARAMS_5D = (3,)
+    """
+    Normalized shot paramaters, 5D representation of cue stick:
+    - a: The offset of the cue ball in the x-coordinate. (Always 0)
+    - b: The offset of the cue ball in the y-coordinate. (Always 0)
+    - theta: The angle of the shot in the yz-plane.
+    - phi: The angle of the in the xz-plane.
+    - velocity: The velocity of the shot.
+    """
+
+    NO_OFFSET_NORM_PARAMS_3D = (4,)
+    """
+    Normalized shot paramaters, 5D representation of cue stick:
+    - a: 0
+    - b: 0
+    - theta: The angle of the shot in the yz-plane.
+    - phi: The angle of the in the xz-plane.
+    - velocity: The velocity of the shot.
+    """
+
+    OUTPUT = (5,)
+    """
+    Output of FastFizActionWrapper.
+    """
+
 
 class FastFizActionWrapper(ActionWrapper):
     MIN_THETA = 0
@@ -49,42 +81,72 @@ class FastFizActionWrapper(ActionWrapper):
         action_space_id: ActionSpaces,
     ):
         super().__init__(env)
+        self.env = env
+        self.action_space_id = action_space_id
 
     def action(self, action):
 
-        # thata = self._compute_angle(
-        #     action, self.theta_index, self.MIN_THETA, self.MAX_THETA
-        # )
-        # phi = self._compute_angle(action, self.phi_index, self.MIN_PHI, self.MAX_PHI)
+        # Offset a and b are always 0
+        offset_a = 0
+        offset_b = 0
 
+        match self.action_space_id:
+            case ActionSpaces.NO_OFFSET_4D:
+                if np.allclose(action, 0):
+                    return np.array([offset_a, offset_b, 0, 0, 0])
+                vec_theta = action[:2]
+                theta = vec_to_abs_deg(vec_theta)
+                theta = np.interp(theta, (0, 360), (self.MIN_THETA, self.MAX_THETA))
+
+                vec_phi = action[2:4]
+                phi = vec_to_abs_deg(vec_phi)
+
+                vec_velocity = vec_length(vec_theta + vec_phi)
+                velocity = np.interp(
+                    vec_velocity, (0, 2), (self.MIN_VELOCITY, self.MAX_VELOCITY)
+                )
+
+            case ActionSpaces.NO_OFFSET_3D:
+                if np.allclose(action, 0):
+                    return np.array([offset_a, offset_b, 0, 0, 0])
+                r, theta, phi = spherical_coordinates(action)
+                theta = np.interp(theta, (0, 360), (self.MIN_THETA, self.MAX_THETA))
+                phi = np.interp(phi, (0, 360), (self.MIN_PHI, self.MAX_PHI))
+                velocity = np.interp(
+                    r, (0, np.sqrt(3)), (self.MIN_VELOCITY, self.MAX_VELOCITY)
+                )
+
+            case ActionSpaces.NO_OFFSET_5D:
+                if np.allclose(action, 0):
+                    return np.array([offset_a, offset_b, 0, 0, 0])
+                vec_theta = action[:2]
+                theta = vec_to_abs_deg(vec_theta)
+                theta = np.interp(theta, (0, 360), (self.MIN_THETA, self.MAX_THETA))
+
+                vec_phi = action[2:4]
+                phi = vec_to_abs_deg(vec_phi)
+
+                velocity = np.interp(
+                    action[4], (-1, 1), (self.MIN_VELOCITY, self.MAX_VELOCITY)
+                )
+            case ActionSpaces.NORM_PARAMS_5D:
+                theta = np.interp(action[2], (-1, 1), (self.MIN_THETA, self.MAX_THETA))
+                phi = np.interp(action[3], (-1, 1), (self.MIN_PHI, self.MAX_PHI))
+                velocity = np.interp(
+                    action[4], (-1, 1), (self.MIN_VELOCITY, self.MAX_VELOCITY)
+                )
+            case ActionSpaces.NO_OFFSET_NORM_PARAMS_3D:
+                theta = np.interp(action[0], (-1, 1), (self.MIN_THETA, self.MAX_THETA))
+                phi = np.interp(action[1], (-1, 1), (self.MIN_PHI, self.MAX_PHI))
+                velocity = np.interp(
+                    action[2], (-1, 1), (self.MIN_VELOCITY, self.MAX_VELOCITY)
+                )
+
+        action = np.array([offset_a, offset_b, theta, phi, velocity])
         return action
 
     @staticmethod
-    def _compute_angle(
-        action, index: int | tuple[int, int], min_angle: int, max_angle: int
-    ):
-        if isinstance(index, int):
-            theta = action[index]
-            # convert from -1 to 1, to 0 to 70
-            theta = (theta + 1) * 35
-
-        elif isinstance(index, tuple):
-            theta_x = action[index[0]]
-            theta_y = action[index[1]]
-
-            max_vec = deg_to_vec(max_angle)
-            min_vec = deg_to_vec(min_angle)
-
-            interp_vec = (
-                min_vec + (max_vec - min_vec) * (np.array([theta_x, theta_y]) + 1) / 2
-            )
-
-            theta = vec_to_abs_deg(interp_vec)
-
-        assert min_angle <= theta <= max_angle, f"Theta out of bounds: {theta}"
-
-    @staticmethod
-    def get_action_space(action_space: ActionSpaces):
+    def get_action_space(action_space: ActionSpaces) -> spaces.Space:
         match action_space:
             case ActionSpaces.NO_OFFSET_5D:
                 return spaces.Box(
@@ -99,6 +161,24 @@ class FastFizActionWrapper(ActionWrapper):
                     dtype=np.float32,
                 )
             case ActionSpaces.NO_OFFSET_3D:
+                return spaces.Box(
+                    low=np.array([-1, -1, -1]),
+                    high=np.array([1, 1, 1]),
+                    dtype=np.float32,
+                )
+            case ActionSpaces.OUTPUT:
+                return spaces.Box(
+                    low=np.array([-1, -1, 0, 0, 0]),
+                    high=np.array([1, 1, 70, 360, 10]),
+                    dtype=np.float32,
+                )
+            case ActionSpaces.NORM_PARAMS_5D:
+                return spaces.Box(
+                    low=np.array([0, 0, -1, -1, -1]),
+                    high=np.array([0, 0, 1, 1, 1]),
+                    dtype=np.float32,
+                )
+            case ActionSpaces.NO_OFFSET_NORM_PARAMS_3D:
                 return spaces.Box(
                     low=np.array([-1, -1, -1]),
                     high=np.array([1, 1, 1]),

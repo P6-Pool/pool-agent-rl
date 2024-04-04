@@ -75,3 +75,8 @@ register(
     id="TestingFastFiz-v0",
     entry_point="fastfiz_env.envs:TestingFastFiz",
 )
+
+register(
+    id="ActionFastFiz-v0",
+    entry_point="fastfiz_env.envs:ActionFastFiz",
+)

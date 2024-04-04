@@ -10,6 +10,7 @@ from .velocity_fastfiz import VelocityFastFiz
 from .simple_fastfiz import SimpleFastFiz
 from .basic_rl_fastfiz import BasicRLFastFiz
 from .testing_fastfiz import TestingFastFiz
+from .action_fastfiz import ActionFastFiz
 
 __all__ = [
     "BaseFastFiz",
@@ -20,4 +21,5 @@ __all__ = [
     "SimpleFastFiz",
     "BasicRLFastFiz",
     "TestingFastFiz",
+    "ActionFastFiz",
 ]

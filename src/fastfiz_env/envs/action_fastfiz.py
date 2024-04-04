@@ -25,8 +25,8 @@ DEFAULT_TEST_OPTIONS = {
 }
 
 
-class TestingFastFiz(gym.Env):
-    """FastFiz environment for testing."""
+class ActionFastFiz(gym.Env):
+    """FastFiz environment for using different action spaces."""
 
     TOTAL_BALLS = 16
 
@@ -35,14 +35,14 @@ class TestingFastFiz(gym.Env):
         reward_function: RewardFunction = DefaultReward,
         num_balls: int = 16,
         *,
-        test_options: Optional[dict] = None,
+        action_space_id: ActionSpaces = ActionSpaces.NO_OFFSET_3D,
+        options: Optional[dict] = None,
     ) -> None:
         super().__init__()
-        self.options = test_options
+        self.options = options
         self.num_balls = num_balls
         self.table_state = create_random_table_state(self.num_balls)
         self.observation_space = self._observation_space()
-        action_space_id = self.options.get("action_space_id", ActionSpaces.NO_OFFSET_3D)
         self.action_space = FastFizActionWrapper.get_action_space(action_space_id)
         self.reward = reward_function
 
@@ -74,7 +74,6 @@ class TestingFastFiz(gym.Env):
         self, *, seed: Optional[int] = None, options: Optional[dict] = None
     ) -> tuple[np.ndarray, dict]:
         super().reset(seed=seed)
-        seed = self.options.get("seed", None)
         self.logger.info("Reset(%s) - total n_steps: %s", self.n_episodes, self.n_step)
         self.logger.info("Reset(%s) - table state seed: %s", self.n_episodes, seed)
         self.table_state = create_random_table_state(self.num_balls, seed=seed)
@@ -105,13 +104,6 @@ class TestingFastFiz(gym.Env):
         """
 
         prev_table_state = ff.TableState(self.table_state)
-        # action_space = spaces.Box(
-        #     low=np.array([0, 0, -1, -1, -1]),
-        #     high=np.array([0, 0, 1, 1, 1]),
-        #     dtype=np.float32,
-        # )
-        # shot_params = action_to_shot([0, 0, *action], action_space)
-
         shot_params = ff.ShotParams(*action)
 
         self.logger.info(
@@ -210,7 +202,10 @@ class TestingFastFiz(gym.Env):
         #     high=np.array([1, 1, 1]),
         #     dtype=np.float32,
         # )
-        return FastFizActionWrapper.get_action_space(ActionSpaces.NO_OFFSET_4D)
+        # return FastFizActionWrapper.get_action_space(ActionSpaces.NO_OFFSET_4D)
+        raise NotImplementedError(
+            "Action space is set by action_space_id and FastFizActionWrapper.get_action_space()."
+        )
 
     def _possible_shot(self, shot_params: ff.ShotParams) -> bool:
         """

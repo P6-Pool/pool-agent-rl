@@ -16,6 +16,10 @@ import fastfiz_env
 from fastfiz_env.utils import CombinedReward
 from fastfiz_env.utils.reward_functions.common import *
 import os
+import logging
+from fastfiz_env.utils.wrappers import FastFizActionWrapper, ActionSpaces
+
+ACTION_ID = ActionSpaces.NO_OFFSET_3D
 
 # Get next version
 if os.path.exists("models/"):
@@ -34,15 +38,11 @@ N_ENVS = 4
 N_STEPS = 2048 * 4
 BATCH_SIZE = int(N_ENVS * N_STEPS)
 
-params = {
-    "n_steps": N_STEPS,
-    "batch_size": BATCH_SIZE,
-}
 
 MAX_EP_STEPS = 15
-BALLS = 3
-ENV_NAME = "SimpleFastFiz-v0"
-MODEL_NAME = f"td3-v{VERSION}-{ENV_NAME.split('FastFiz')[0].lower()}-{BALLS}_balls-{params['n_steps']}_steps-{params['batch_size']}_batch"
+BALLS = 2
+ENV_NAME = "ActionFastFiz-v0"
+MODEL_NAME = f"ppo-v{VERSION}-{ENV_NAME.split('FastFiz')[0].lower()}-{BALLS}_balls-{ACTION_ID.name.lower()}"
 TB_LOGS_DIR = "logs/tb_logs/"
 LOGS_DIR = f"logs/{MODEL_NAME}"
 MODEL_DIR = f"models/{MODEL_NAME}/"
@@ -72,14 +72,26 @@ reward_weights = [
 reward_function = CombinedReward(rewards_functions, reward_weights, short_circuit=True)
 
 
+OPTIONS = {
+    # "seed": 99,
+    "log_level": logging.WARNING,
+    "logs_dir": "logs/env_test_fastfiz",
+    "action_space_id": ACTION_ID,
+}
+
+
 def make_env():
-    return fastfiz_env.make(
+    env = fastfiz_env.make(
         ENV_NAME,
         reward_function=reward_function,
         num_balls=BALLS,
         max_episode_steps=MAX_EP_STEPS,
         disable_env_checker=False,
+        options=OPTIONS,
     )
+
+    env = FastFizActionWrapper(env, ACTION_ID)
+    return env
 
 
 # env = VecNormalize(
@@ -104,8 +116,11 @@ action_noise = OrnsteinUhlenbeckActionNoise(
 )
 
 
-model = TD3(
-    MlpPolicy, env, verbose=1, tensorboard_log=TB_LOGS_DIR, action_noise=action_noise
+model = PPO(
+    "MlpPolicy",
+    env,
+    verbose=1,
+    tensorboard_log=TB_LOGS_DIR,
 )
 
 

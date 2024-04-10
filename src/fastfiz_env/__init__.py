@@ -37,17 +37,26 @@ from gymnasium.envs.registration import register
 register(
     id="BaseFastFiz-v0",
     entry_point="fastfiz_env.envs:BaseFastFiz",
+    additional_wrappers=(
+        utils.wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),
+    ),
 )
 
 register(
     id="BaseRLFastFiz-v0",
     entry_point="fastfiz_env.envs:BaseRLFastFiz",
+    additional_wrappers=(
+        utils.wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),
+    ),
 )
 
 
 register(
     id="VelocityFastFiz-v0",
     entry_point="fastfiz_env.envs:VelocityFastFiz",
+    additional_wrappers=(
+        utils.wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),
+    ),
 )
 
 register(

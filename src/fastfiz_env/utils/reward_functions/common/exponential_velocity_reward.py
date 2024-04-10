@@ -17,5 +17,5 @@ class ExponentialVelocityReward(RewardFunction):
         """
         Reward function that gives a reward based on velocity of the action.
         """
-        reward = np.interp(action[4], [0, 10], [0, 1])
-        return reward**10
+        reward = float(np.interp(action[4], [0, 10], [0, 1]))
+        return reward**2

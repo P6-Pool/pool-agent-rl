@@ -1,34 +1,64 @@
 import fastfiz_env
 from fastfiz_env.utils.reward_functions import DefaultReward
+from fastfiz_env.utils.reward_functions.common import (
+    ConstantReward,
+    ConstantWeightMaxSteps,
+    NegativeConstantWeight,
+    ExponentialVelocityReward,
+)
 from stable_baselines3 import PPO
 import numpy as np
 from stable_baselines3.common.env_util import make_vec_env
 from fastfiz_env.utils.fastfiz import action_to_shot
+from fastfiz_env.utils.wrappers import (
+    ActionSpaces,
+    FastFizActionWrapper,
+)
 from gymnasium import spaces
 import logging
 
-BALLS = 4
+BALLS = 2
 
 
 TEST_OPTIONS = {
     "seed": 99,
-    "log_level": logging.INFO,
+    "log_level": logging.WARNING,
     "logs_dir": "logs/env_test_fastfiz",
+    "action_space_id": ActionSpaces.NO_OFFSET_3D,
 }
 
 
 env = fastfiz_env.make(
-    "TestingFastFiz-v0",
-    reward_function=DefaultReward,
+    "ActionFastFiz-v0",
+    reward_function=ExponentialVelocityReward(NegativeConstantWeight),
     num_balls=BALLS,
-    max_episode_steps=100,
-    test_options=TEST_OPTIONS,
+    max_episode_steps=20,
+    options=TEST_OPTIONS,
 )
 
+# env = MaxEpisodeStepsWrapper(env)
+env = FastFizActionWrapper(env, ActionSpaces.NO_OFFSET_3D)
+# env = TimeLimit(env, max_episode_steps=77)
+# env = FlattenObservation(env)
 
-# model = PPO.load(MODEL_PATH, env=env)
+# env = MaxEpisodeStepsWrapper(env)
+
+# env = TimeLimit(env, max_episode_steps=87)
+# print(env.get_wrapper_attr("_time_limit_max_episode_steps"))
+# print(env.get_wrapper_attr("_time_limit_max_episode_steps"))
+# env = MaxEpisodeStepsWrapper(env)
+# print(env.get_wrapper_attr("_time_limit_max_episode_steps"))
+# env = TimeLimit(env, max_episode_steps=85)
+
 
 vec_env = make_vec_env(lambda: env, n_envs=1)
+vec_env.reset()
+# vec_env.set_attr("_max_episode_steps", env.get_wrapper_attr("_max_episode_steps"))
+
+# print(vec_env.get_wrapper_attr("_max_episode_steps"))
+
+# print(vec_env.get_attr("_max_episode_steps"))
+# model = PPO.load(MODEL_PATH, env=env)
 
 
 # action_space = spaces.Box(
@@ -63,3 +93,7 @@ for _ in range(10):
     obs = vec_env.reset()
     action = vec_env.action_space.sample()
     obs, rewards, done, info = vec_env.step([action])
+    print(action)
+    action_ = env.action(action)
+    print(action_)
+    print(rewards)

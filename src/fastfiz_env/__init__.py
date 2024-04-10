@@ -74,9 +74,15 @@ register(
 register(
     id="TestingFastFiz-v0",
     entry_point="fastfiz_env.envs:TestingFastFiz",
+    additional_wrappers=(
+        utils.wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),
+    ),
 )
 
 register(
     id="ActionFastFiz-v0",
     entry_point="fastfiz_env.envs:ActionFastFiz",
+    additional_wrappers=(
+        utils.wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),
+    ),
 )

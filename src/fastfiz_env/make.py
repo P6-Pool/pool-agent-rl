@@ -32,5 +32,5 @@ def make(
         num_balls=num_balls,
         max_episode_steps=max_episode_steps,
         disable_env_checker=disable_env_checker,
-        **kwargs
+        **kwargs,
     )

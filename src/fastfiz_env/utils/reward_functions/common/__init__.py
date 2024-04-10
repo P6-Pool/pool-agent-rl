@@ -10,8 +10,26 @@ from .cue_ball_not_moved_reward import CueBallNotMovedReward
 from .game_won_reward import GameWonReward
 from .impossible_shot_reward import ImpossibleShotReward
 from .constant_reward import ConstantReward
+from .balls_not_moved_reward import BallsNotMovedReward
+from .velocity_reward import VelocityReward
+from .exponential_velocity_reward import ExponentialVelocityReward
+
+from .weights import (
+    ConstantWeight,
+    NegativeConstantWeight,
+    ConstantWeightMaxSteps,
+    NegativeConstantWeightMaxSteps,
+    ConstantWeightNumBalls,
+    NegativeConstantWeightNumBalls,
+    ConstantWeightBalls,
+    NegativeConstantWeightBalls,
+    ConstantWeightCurrentStep,
+    NegativeConstantWeightCurrentStep,
+)
+
 
 __all__ = [
+    # Reward functions
     "StepPocketedReward",
     "TotalDistanceReward",
     "DeltaBestTotalDistanceReward",
@@ -20,4 +38,18 @@ __all__ = [
     "GameWonReward",
     "ImpossibleShotReward",
     "ConstantReward",
+    "BallsNotMovedReward",
+    "VelocityReward",
+    "ExponentialVelocityReward",
+    # Weights
+    "ConstantWeight",
+    "NegativeConstantWeight",
+    "ConstantWeightMaxSteps",
+    "NegativeConstantWeightMaxSteps",
+    "ConstantWeightNumBalls",
+    "NegativeConstantWeightNumBalls",
+    "ConstantWeightBalls",
+    "NegativeConstantWeightBalls",
+    "ConstantWeightCurrentStep",
+    "NegativeConstantWeightCurrentStep",
 ]

@@ -9,6 +9,7 @@ from .utils import (
 )
 
 from .action import ActionSpaces, FastFizActionWrapper
+from .max_episode_steps import MaxEpisodeStepsInjectionWrapper
 
 __all__ = [
     "deg_to_vec",
@@ -18,4 +19,5 @@ __all__ = [
     "vec_normalize",
     "ActionSpaces",
     "FastFizActionWrapper",
+    "MaxEpisodeStepsInjectionWrapper",
 ]

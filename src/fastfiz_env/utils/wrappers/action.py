@@ -110,7 +110,9 @@ class FastFizActionWrapper(ActionWrapper):
                 if np.allclose(action, 0):
                     return np.array([offset_a, offset_b, 0, 0, 0])
                 r, theta, phi = spherical_coordinates(action)
-                theta = np.interp(theta, (0, 360), (self.MIN_THETA, self.MAX_THETA))
+                theta = np.interp(
+                    theta, (0, 360), (self.MIN_THETA, self.MAX_THETA - 0.001)
+                )
                 phi = np.interp(phi, (0, 360), (self.MIN_PHI, self.MAX_PHI))
                 velocity = np.interp(
                     r, (0, np.sqrt(3)), (self.MIN_VELOCITY, self.MAX_VELOCITY)

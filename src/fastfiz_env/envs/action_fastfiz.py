@@ -45,7 +45,7 @@ class ActionFastFiz(gym.Env):
         self.observation_space = self._observation_space()
         self.action_space = FastFizActionWrapper.get_action_space(action_space_id)
         self.reward = reward_function
-
+        self.max_episode_steps = None
         # Logging
         self.logger = logging.getLogger(__name__)
         logs_dir = self.options.get("logs_dir", "")
@@ -70,20 +70,23 @@ class ActionFastFiz(gym.Env):
             self.observation_space,
         )
 
+    def _max_episode_steps(self):
+        if self.get_wrapper_attr("_time_limit_max_episode_steps") is not None:
+            self.max_episode_steps = self.get_wrapper_attr(
+                "_time_limit_max_episode_steps"
+            )
+            self.reward.max_episode_steps = self.max_episode_steps
+
     def reset(
         self, *, seed: Optional[int] = None, options: Optional[dict] = None
     ) -> tuple[np.ndarray, dict]:
         super().reset(seed=seed)
-        self.logger.info("Reset(%s) - total n_steps: %s", self.n_episodes, self.n_step)
-        self.logger.info("Reset(%s) - table state seed: %s", self.n_episodes, seed)
+
+        if self.max_episode_steps is None:
+            self._max_episode_steps()
+
         self.table_state = create_random_table_state(self.num_balls, seed=seed)
         self.reward.reset(self.table_state)
-
-        self.logger.info(
-            "Reset(%s) - table state:\n%s",
-            self.n_episodes,
-            table_state_to_string(self.table_state),
-        )
 
         observation = self._get_observation()
         info = self._get_info()
@@ -122,9 +125,7 @@ class ActionFastFiz(gym.Env):
 
         observation = self._get_observation()
 
-        reward = self.reward.get_reward(
-            prev_table_state, self.table_state, impossible_shot
-        )
+        reward = self.reward.get_reward(prev_table_state, self.table_state, action)
 
         terminated = self._is_terminal_state()
         truncated = False

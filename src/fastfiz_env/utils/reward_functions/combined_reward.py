@@ -1,6 +1,7 @@
-from .reward_function import RewardFunction
+from .reward_function import RewardFunction, Weight
 from .binary_reward import BinaryReward
 import fastfiz as ff
+import numpy as np
 
 
 class CombinedReward(RewardFunction):
@@ -10,9 +11,10 @@ class CombinedReward(RewardFunction):
 
     def __init__(
         self,
-        reward_functions: list[RewardFunction],
-        weights: list[float | int],
+        weight: Weight = 1,
+        max_episode_steps: int = None,
         *,
+        reward_functions: list[RewardFunction],
         short_circuit: bool = False,
     ) -> None:
         """
@@ -26,23 +28,34 @@ class CombinedReward(RewardFunction):
         Returns:
             None
         """
-        assert len(reward_functions) == len(
-            weights
-        ), "Reward functions and weights must have the same length."
         self.reward_functions = reward_functions
-        self.weights = weights
+        super().__init__(weight, max_episode_steps=max_episode_steps)
+
+        # Set max_episode_steps for all reward functions
+
         self.short_circuit = short_circuit
+        self.max_episode_steps = max_episode_steps
+
+    @property
+    def max_episode_steps(self) -> int:
+        return self._max_episode_steps
+
+    @max_episode_steps.setter
+    def max_episode_steps(self, value: int) -> None:
+        self._max_episode_steps = value
+        for reward in self.reward_functions:
+            reward.max_episode_steps = value
 
     def reset(self, table_state: ff.TableState) -> None:
         super().reset(table_state)
         for reward in self.reward_functions:
             reward.reset(table_state)
 
-    def get_reward(
+    def reward(
         self,
         prev_table_state: ff.TableState,
         table_state: ff.TableState,
-        impossible_shot: bool,
+        action: np.ndarray,
     ) -> float:
         """
         Calculates the combined reward based on the given table states and possible shot flag.
@@ -57,17 +70,19 @@ class CombinedReward(RewardFunction):
 
         """
         total_reward = 0
-        for i, reward_function in enumerate(self.reward_functions):
-            reward = reward_function.get_reward(
-                prev_table_state, table_state, impossible_shot
-            )
-            total_reward += reward * self.weights[i]
+        for reward_function in self.reward_functions:
+            reward = reward_function.get_reward(prev_table_state, table_state, action)
+            total_reward += reward
 
             if issubclass(reward_function.__class__, BinaryReward):
-                if reward == 1 and self.short_circuit and reward_function.short_circuit:
+                if (
+                    reward == 1 * reward_function.weight()
+                    and self.short_circuit
+                    and reward_function.short_circuit
+                ):
                     return total_reward
 
         return total_reward
 
     def __str__(self) -> str:
-        return f"CombinedReward({[str(reward) for reward in self.reward_functions]}, {str(self.weights)}, short_circuit={self.short_circuit})"
+        return f"CombinedReward({[str(reward) for reward in self.reward_functions]}, {None}, short_circuit={self.short_circuit})"

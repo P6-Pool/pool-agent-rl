@@ -1,4 +1,6 @@
 from .. import BinaryReward
+import fastfiz as ff
+import numpy as np
 
 
 class CueBallPocketedReward(BinaryReward):
@@ -6,10 +8,12 @@ class CueBallPocketedReward(BinaryReward):
     Reward function that reward based on whether the cue ball is pocketed.
     """
 
-    def reset(self, table_state) -> None:
-        pass
-
-    def get_reward(self, prev_table_state, table_state, impossible_shot) -> float:
+    def reward(
+        self,
+        prev_table_state: ff.TableState,
+        table_state: ff.TableState,
+        action: np.ndarray,
+    ) -> float:
         """
         Reward function returns 1 if the cue ball is pocketed, 0 otherwise.
         """

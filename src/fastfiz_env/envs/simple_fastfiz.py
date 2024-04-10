@@ -63,7 +63,8 @@ class SimpleFastFiz(gym.Env):
 
         prev_table_state = ff.TableState(self.table_state)
 
-        shot_params = shot_params_from_action(self.table_state, [0, 0, *action])
+        # shot_params = shot_params_from_action(self.table_state, [0, 0, *action])
+        shot_params = ff.ShotParams(*action)
 
         impossible_shot = not self._possible_shot(shot_params)
 

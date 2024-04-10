@@ -19,11 +19,6 @@ import fastfiz as ff
 import logging
 import time
 
-DEFAULT_TEST_OPTIONS = {
-    "seed": 123,
-    "log_level": logging.INFO,
-}
-
 
 class TestingFastFiz(gym.Env):
     """FastFiz environment for testing."""
@@ -35,15 +30,16 @@ class TestingFastFiz(gym.Env):
         reward_function: RewardFunction = DefaultReward,
         num_balls: int = 16,
         *,
-        test_options: Optional[dict] = None,
+        options: Optional[dict] = None,
     ) -> None:
         super().__init__()
-        self.options = test_options
+        self.options = options
         self.num_balls = num_balls
         self.table_state = create_random_table_state(self.num_balls)
         self.observation_space = self._observation_space()
         action_space_id = self.options.get("action_space_id", ActionSpaces.NO_OFFSET_3D)
         self.action_space = FastFizActionWrapper.get_action_space(action_space_id)
+        self.max_episode_steps = None
         self.reward = reward_function
 
         # Logging
@@ -70,10 +66,21 @@ class TestingFastFiz(gym.Env):
             self.observation_space,
         )
 
+    def _max_episode_steps(self):
+        if self.get_wrapper_attr("_time_limit_max_episode_steps") is not None:
+            self.max_episode_steps = self.get_wrapper_attr(
+                "_time_limit_max_episode_steps"
+            )
+            self.reward.max_episode_steps = self.max_episode_steps
+
     def reset(
         self, *, seed: Optional[int] = None, options: Optional[dict] = None
     ) -> tuple[np.ndarray, dict]:
         super().reset(seed=seed)
+
+        if self.max_episode_steps is None:
+            self._max_episode_steps()
+
         seed = self.options.get("seed", None)
         self.logger.info("Reset(%s) - total n_steps: %s", self.n_episodes, self.n_step)
         self.logger.info("Reset(%s) - table state seed: %s", self.n_episodes, seed)
@@ -130,9 +137,7 @@ class TestingFastFiz(gym.Env):
 
         observation = self._get_observation()
 
-        reward = self.reward.get_reward(
-            prev_table_state, self.table_state, impossible_shot
-        )
+        reward = self.reward.get_reward(prev_table_state, self.table_state, action)
 
         terminated = self._is_terminal_state()
         truncated = False
@@ -172,6 +177,9 @@ class TestingFastFiz(gym.Env):
         return self._game_won()
 
     def _game_won(self) -> bool:
+        if self.table_state.getBall(0).isPocketed():
+            return False
+
         for i in range(1, self.num_balls):
             if not self.table_state.getBall(i).isPocketed():
                 return False

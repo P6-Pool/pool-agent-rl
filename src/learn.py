@@ -6,6 +6,8 @@ from stable_baselines3.common.callbacks import (
     CallbackList,
 )
 from stable_baselines3 import PPO, SAC, TD3
+from sb3_contrib import RecurrentPPO
+from sb3_contrib.ppo_recurrent.policies import MlpLstmPolicy
 import numpy as np
 from stable_baselines3.td3.policies import MlpPolicy
 from stable_baselines3.common.noise import (
@@ -13,7 +15,7 @@ from stable_baselines3.common.noise import (
     OrnsteinUhlenbeckActionNoise,
 )
 import fastfiz_env
-from fastfiz_env.utils import CombinedReward
+from fastfiz_env.utils import CombinedReward, DefaultReward
 from fastfiz_env.utils.reward_functions.common import *
 import os
 import logging
@@ -35,8 +37,6 @@ else:
 
 
 N_ENVS = 4
-N_STEPS = 2048 * 4
-BATCH_SIZE = int(N_ENVS * N_STEPS)
 
 
 MAX_EP_STEPS = 15
@@ -49,31 +49,8 @@ MODEL_DIR = f"models/{MODEL_NAME}/"
 BEST_MODEL_DIR = f"models/{MODEL_NAME}/best/"
 
 
-rewards_functions = [
-    GameWonReward(),
-    ImpossibleShotReward(),
-    CueBallNotMovedReward(),
-    CueBallPocketedReward(),
-    DeltaBestTotalDistanceReward(),
-    StepPocketedReward(),
-    ConstantReward(),
-]
-reward_weights = [
-    10,
-    0,
-    0,
-    0,
-    0.025,
-    (10 / BALLS),
-    0,
-]
-
-
-reward_function = CombinedReward(rewards_functions, reward_weights, short_circuit=True)
-
-
 OPTIONS = {
-    # "seed": 99,
+    # "seed": 42,
     "log_level": logging.WARNING,
     "logs_dir": "logs/env_test_fastfiz",
     "action_space_id": ACTION_ID,
@@ -83,7 +60,7 @@ OPTIONS = {
 def make_env():
     env = fastfiz_env.make(
         ENV_NAME,
-        reward_function=reward_function,
+        reward_function=DefaultReward,
         num_balls=BALLS,
         max_episode_steps=MAX_EP_STEPS,
         disable_env_checker=False,
@@ -110,10 +87,10 @@ env = make_vec_env(make_env, n_envs=N_ENVS)
 
 # env = fastfiz_env.make(ENV_NAME, reward_function=reward_function, num_balls=BALLS)
 
-action_noise = OrnsteinUhlenbeckActionNoise(
-    mean=np.zeros(env.action_space.shape),
-    sigma=float(0.5) * np.ones(env.action_space.shape),
-)
+# action_noise = OrnsteinUhlenbeckActionNoise(
+#     mean=np.zeros(env.action_space.shape),
+#     sigma=float(0.5) * np.ones(env.action_space.shape),
+# )
 
 
 model = PPO(
@@ -125,7 +102,7 @@ model = PPO(
 
 
 checkpoint_callback = CheckpointCallback(
-    save_freq=50_000,
+    save_freq=50_000 / N_ENVS,
     save_path=MODEL_DIR,
     name_prefix=MODEL_NAME,
     save_vecnormalize=True,
@@ -135,7 +112,7 @@ checkpoint_callback = CheckpointCallback(
 eval_callback = EvalCallback(
     eval_env=env,
     n_eval_episodes=10,
-    eval_freq=25000,
+    eval_freq=10_000 / N_ENVS,
     log_path=LOGS_DIR,
     best_model_save_path=BEST_MODEL_DIR,
 )

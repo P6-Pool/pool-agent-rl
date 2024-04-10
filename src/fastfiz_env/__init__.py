@@ -44,16 +44,6 @@ register(
     entry_point="fastfiz_env.envs:BaseRLFastFiz",
 )
 
-register(
-    id="PocketRLFastFiz-v0",
-    entry_point="fastfiz_env.envs:PocketRLFastFiz",
-)
-
-
-register(
-    id="EventFastFiz-v0",
-    entry_point="fastfiz_env.envs:EventFastFiz",
-)
 
 register(
     id="VelocityFastFiz-v0",
@@ -63,25 +53,15 @@ register(
 register(
     id="SimpleFastFiz-v0",
     entry_point="fastfiz_env.envs:SimpleFastFiz",
-)
-
-register(
-    id="BasicRLFastFiz-v0",
-    entry_point="fastfiz_env.envs:BasicRLFastFiz",
+    additional_wrappers=(
+        utils.wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),
+    ),
 )
 
 
 register(
     id="TestingFastFiz-v0",
     entry_point="fastfiz_env.envs:TestingFastFiz",
-    additional_wrappers=(
-        utils.wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),
-    ),
-)
-
-register(
-    id="ActionFastFiz-v0",
-    entry_point="fastfiz_env.envs:ActionFastFiz",
     additional_wrappers=(
         utils.wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),
     ),

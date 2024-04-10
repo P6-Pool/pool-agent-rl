@@ -6,8 +6,6 @@ from stable_baselines3.common.callbacks import (
     CallbackList,
 )
 from stable_baselines3 import PPO, SAC, TD3
-from sb3_contrib import RecurrentPPO
-from sb3_contrib.ppo_recurrent.policies import MlpLstmPolicy
 import numpy as np
 from stable_baselines3.td3.policies import MlpPolicy
 from stable_baselines3.common.noise import (
@@ -93,12 +91,7 @@ env = make_vec_env(make_env, n_envs=N_ENVS)
 # )
 
 
-model = PPO(
-    "MlpPolicy",
-    env,
-    verbose=1,
-    tensorboard_log=TB_LOGS_DIR,
-)
+model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=TB_LOGS_DIR, device="cpu")
 
 
 checkpoint_callback = CheckpointCallback(

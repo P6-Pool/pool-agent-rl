@@ -14,7 +14,7 @@ def get_time_limit_wrapper_max_episode_steps(env):
             wrapper, then this function returns ``None``.
     """
     if hasattr(env, "env"):
-        if isinstance(env, gym.wrappers.TimeLimit):
+        if isinstance(env, gym.wrappers.TimeLimit):  # type: ignore
             return env._max_episode_steps
         get_time_limit_wrapper_max_episode_steps(env.env)
     return None

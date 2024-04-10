@@ -69,7 +69,7 @@ class ActionSpaces(Enum):
 
 class FastFizActionWrapper(ActionWrapper):
     MIN_THETA = 0
-    MAX_THETA = 70
+    MAX_THETA = 70 - 0.001
     MIN_PHI = 0
     MAX_PHI = 360
     MIN_VELOCITY = 0
@@ -83,6 +83,7 @@ class FastFizActionWrapper(ActionWrapper):
         super().__init__(env)
         self.env = env
         self.action_space_id = action_space_id
+        self.action_space = self.get_action_space(action_space_id)
 
     def action(self, action):
 
@@ -148,7 +149,7 @@ class FastFizActionWrapper(ActionWrapper):
         return action
 
     @staticmethod
-    def get_action_space(action_space: ActionSpaces) -> spaces.Space:
+    def _get_action_space(action_space: ActionSpaces) -> spaces.Space:
         match action_space:
             case ActionSpaces.NO_OFFSET_5D:
                 return spaces.Box(

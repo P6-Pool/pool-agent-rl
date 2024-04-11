@@ -86,7 +86,7 @@ def main() -> None:
                 r, theta, phi = spherical_coordinates(action)
                 theta = np.interp(theta, (0, 360), (0, 70 - 0.001))
                 phi = np.interp(phi, (0, 360), (0, 360))
-                velocity = np.interp(r, (0, np.sqrt(3)), (0, 4))
+                velocity = np.interp(r, (0, np.sqrt(3)), (0, 10))
                 shot = ff.ShotParams(*[0, 0, theta, phi, velocity])
             if possible_shot(table, shot):
                 return shot

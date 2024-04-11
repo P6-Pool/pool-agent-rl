@@ -1,5 +1,5 @@
 from ..reward_function import RewardFunction
-from ....utils.fastfiz.fastfiz import num_balls_pocketed
+from ...utils.fastfiz.fastfiz import num_balls_pocketed
 import fastfiz as ff
 import numpy as np
 

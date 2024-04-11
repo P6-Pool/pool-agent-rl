@@ -5,7 +5,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="fastfiz-env",
-    description="Gymnasium environments for FastFiz",
+    description="Gymnasium environment for FastFiz pool simulator",
     version="0.0.1",
     license="MIT",
     install_requires=requirements,

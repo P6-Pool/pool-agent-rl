@@ -62,15 +62,3 @@ def spherical_coordinates(vector: np.ndarray) -> tuple[float, float, float]:
 
 def vec_magnitude(vector):
     return np.linalg.norm(vector)
-
-
-if __name__ == "__main__":
-    vector = np.array([-0.641397, -0.08621697, 0.48465544])  # Example vector (3, 4, 5)
-
-    # Compute angles
-    theta, phi = spherical_coordinates(vector)
-    mag = vec_magnitude(vector)
-
-    print("Theta (angle from z-axis):", theta, "degrees")
-    print("Phi (angle in xy plane):", phi, "degrees")
-    print("Magnitude:", mag)

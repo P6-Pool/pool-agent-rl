@@ -3,7 +3,7 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 from typing import Optional
-from ..utils.wrappers import ActionSpaces, FastFizActionWrapper
+from ..wrappers import ActionSpaces, FastFizActionWrapper
 
 from fastfiz_env.utils.fastfiz.fastfiz import table_state_to_string
 from ..utils.fastfiz import (
@@ -14,7 +14,7 @@ from ..utils.fastfiz import (
     action_to_shot,
     shotparams_to_string,
 )
-from ..utils import RewardFunction, DefaultReward
+from ..reward_functions import RewardFunction, DefaultReward
 import fastfiz as ff
 import logging
 import time

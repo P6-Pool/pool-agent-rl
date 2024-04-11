@@ -1,6 +1,6 @@
 from gymnasium.envs.registration import EnvSpec
 import gymnasium as gym
-from .utils import RewardFunction
+from .reward_functions import RewardFunction
 
 
 def make(

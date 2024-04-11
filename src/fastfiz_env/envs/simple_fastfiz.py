@@ -2,14 +2,16 @@ import fastfiz as ff
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
+
+from fastfiz_env.utils.fastfiz.fastfiz import num_balls_pocketed
 from ..utils.fastfiz import (
     create_random_table_state,
     get_ball_positions,
     normalize_ball_positions,
 )
-from ..utils.envs import game_won, terminal_state, possible_shot
+from .utils import game_won, terminal_state, possible_shot
 from typing import Optional
-from ..utils import RewardFunction, DefaultReward
+from ..reward_functions import RewardFunction, DefaultReward
 
 
 class SimpleFastFiz(gym.Env):
@@ -48,6 +50,7 @@ class SimpleFastFiz(gym.Env):
 
         self.table_state = create_random_table_state(self.num_balls)
         self.reward.reset(self.table_state)
+        self._prev_pocketed = 0
 
         observation = self._get_observation()
         info = self._get_info()
@@ -70,6 +73,12 @@ class SimpleFastFiz(gym.Env):
         terminated = self._is_terminal_state()
         truncated = False
         info = self._get_info()
+
+        pocketed = num_balls_pocketed(self.table_state)
+        if pocketed > self._prev_pocketed:
+            self._prev_pocketed = pocketed
+        else:
+            reward = min(-1, reward - 0.3)
 
         return observation, reward, terminated, truncated, info
 

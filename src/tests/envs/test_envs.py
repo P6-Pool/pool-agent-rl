@@ -1,6 +1,6 @@
 import unittest
 from fastfiz_env.envs import BaseRLFastFiz
-from fastfiz_env.utils.reward_functions.common import ConstantReward
+from fastfiz_env.reward_functions.common import ConstantReward
 
 
 class TestBaseRLFastFiz(unittest.TestCase):

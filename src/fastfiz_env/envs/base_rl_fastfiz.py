@@ -5,7 +5,7 @@ from ..utils.fastfiz import (
     create_random_table_state,
     get_ball_positions,
 )
-from ..utils import RewardFunction, DefaultReward
+from ..reward_functions import RewardFunction, DefaultReward
 from . import BaseFastFiz
 
 

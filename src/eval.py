@@ -36,6 +36,7 @@ def positions(table_state):
     balls = []
     for i in range(table_state.getNumBalls()):
         if table_state.getBall(i).isPocketed():
+            # balls.append((0, 0))
             pass
         else:
             pos = table_state.getBall(i).getPos()

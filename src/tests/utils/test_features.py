@@ -1,6 +1,5 @@
 import unittest
-import fastfiz as ff
-from fastfiz_env.utils.wrappers import deg_to_vec, vec_to_deg, vec_to_abs_deg
+from fastfiz_env.wrappers.utils import deg_to_vec, vec_to_deg, vec_to_abs_deg
 import numpy as np
 
 

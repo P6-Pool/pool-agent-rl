@@ -1,14 +1,8 @@
 import unittest
-from fastfiz_env.utils.reward_functions.common import *
-from fastfiz_env.utils.reward_functions import CombinedReward
-from fastfiz_env.utils.fastfiz import (
-    create_table_state,
-    get_ball_positions,
-    pocket_centers,
-)
 import fastfiz as ff
-
-from fastfiz_env.utils.reward_functions.reward_function import Weight
+from fastfiz_env.reward_functions.common import *
+from fastfiz_env.reward_functions import CombinedReward
+from fastfiz_env.utils.fastfiz import create_table_state
 
 
 def weight_fn(num_balls: int, current_step: int, max_steps: int) -> float:

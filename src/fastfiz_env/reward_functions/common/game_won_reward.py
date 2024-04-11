@@ -1,5 +1,4 @@
 from .. import BinaryReward
-from ....utils.fastfiz import num_balls_in_play
 import fastfiz as ff
 import numpy as np
 

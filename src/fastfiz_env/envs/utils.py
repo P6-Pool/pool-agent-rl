@@ -1,5 +1,4 @@
 import fastfiz as ff
-from gymnasium.wrappers import resize_observation
 
 
 def game_won(table_state: ff.TableState) -> bool:

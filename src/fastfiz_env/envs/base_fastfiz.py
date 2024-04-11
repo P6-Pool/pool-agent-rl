@@ -2,7 +2,7 @@ import numpy as np
 import gymnasium as gym
 import fastfiz as ff
 from ..utils.fastfiz import create_table_state, shot_params_from_action
-from ..utils import RewardFunction, DefaultReward
+from ..reward_functions import RewardFunction, DefaultReward
 from typing import Optional
 import warnings
 

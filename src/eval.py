@@ -7,13 +7,13 @@ from fastfiz_env.utils.fastfiz import (
     get_ball_positions,
     normalize_ball_positions,
 )
-from fastfiz_env.utils.envs import game_won, possible_shot
+from fastfiz_env.envs.utils import game_won, possible_shot
 from stable_baselines3 import PPO
 from typing import Optional, Callable
 import argparse
 
-from fastfiz_env.utils.wrappers.action import FastFizActionWrapper
-from fastfiz_env.utils.wrappers.utils import spherical_coordinates
+from fastfiz_env.wrappers.action import FastFizActionWrapper
+from fastfiz_env.wrappers.utils import spherical_coordinates
 
 
 def get_play_config() -> dict:

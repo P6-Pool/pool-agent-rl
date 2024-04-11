@@ -62,7 +62,7 @@ class SimpleFastFiz(gym.Env):
         prev_table_state = ff.TableState(self.table_state)
         shot_params = ff.ShotParams(*action)
 
-        if not self._possible_shot(shot_params):
+        if self._possible_shot(shot_params):
             self.table_state.executeShot(shot_params)
 
         observation = self._get_observation()

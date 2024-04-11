@@ -264,6 +264,16 @@ class TestRewardFunctions(unittest.TestCase):
             1 / 5,
         )
 
+        reward = ConstantReward(weight=ConstantWeightCurrentStep, max_episode_steps=10)
+        reward.reset(table_state)
+        for _ in range(1, 3):
+            reward.get_reward(table_state, table_state, self.empty_action)
+
+        self.assertEqual(
+            reward.get_reward(table_state, table_state, self.empty_action),
+            1 / 3,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

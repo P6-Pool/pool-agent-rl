@@ -6,13 +6,10 @@ from ..utils.fastfiz import (
     create_table_state,
     shot_params_from_action,
     get_ball_positions,
-    num_balls_in_play,
-    get_ball_positions_id,
     get_ball_velocity,
     normalize_ball_positions,
-    normalize_ball_velocity,
 )
-from ..utils import RewardFunction, DefaultReward
+from ..reward_functions import RewardFunction, DefaultReward
 from typing import Optional
 import warnings
 

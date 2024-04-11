@@ -1,10 +1,18 @@
 from abc import ABC, abstractmethod
+from typing import Callable, Union
 import fastfiz as ff
 from .reward_function import RewardFunction
+import numpy as np
 
 
 class BinaryReward(RewardFunction, ABC):
-    def __init__(self, *, short_circuit: bool = True) -> None:
+    def __init__(
+        self,
+        weight: Union[float, Callable[[int, int, int], float]] = 1,
+        *,
+        max_episode_steps: int = None,
+        short_circuit: bool = True,
+    ) -> None:
         """
         Initializes a BinaryReward object.
 
@@ -13,18 +21,15 @@ class BinaryReward(RewardFunction, ABC):
                 If set to True, the reward will be calculated based on the first condition that is met.
                 If set to False, all conditions will be evaluated. Defaults to True.
         """
+        super().__init__(weight=weight, max_episode_steps=max_episode_steps)
         self.short_circuit = short_circuit
 
     @abstractmethod
-    def reset(self, table_state: ff.TableState) -> None:
-        pass
-
-    @abstractmethod
-    def get_reward(
+    def reward(
         self,
         prev_table_state: ff.TableState,
         table_state: ff.TableState,
-        possible_shot: bool,
+        action: np.ndarray,
     ) -> float:
         """
         Calculates the reward for a given table state transition.
@@ -38,3 +43,6 @@ class BinaryReward(RewardFunction, ABC):
             float: If the condition is met, return 1, otherwise return 0.
         """
         pass
+
+    def __str__(self) -> str:
+        return super().__str__() + f"({self.short_circuit})"

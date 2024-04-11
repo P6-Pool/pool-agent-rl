@@ -8,7 +8,7 @@ from fastfiz_env.utils.fastfiz import (
 )
 
 
-class TestUtilsFastFiz(unittest.TestCase):
+class TestFastFiz(unittest.TestCase):
     def test_create_table_state(self):
         num_balls = 16
         table_state = create_table_state(num_balls)

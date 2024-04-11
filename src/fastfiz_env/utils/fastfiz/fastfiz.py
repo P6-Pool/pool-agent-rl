@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Optional
 import fastfiz as ff
+from gymnasium import spaces
 
 POCKETS = [
     ff.Table.SW,
@@ -52,22 +53,26 @@ def num_balls_in_play(table_state: ff.TableState) -> int:
     )
 
 
-def num_balls_pocketed(table_state: ff.TableState) -> int:
+def num_balls_pocketed(
+    table_state: ff.TableState,
+    *,
+    range_start: int = 0,
+    range_stop: Optional[int] = None,
+) -> int:
     """
     Returns the number of balls pocketed in the given table state.
 
     Args:
         table_state (ff.TableState): The table state object representing the current state of the pool table.
+        range_start (int): The starting index of the range of balls to check. Defaults to 0.
+        range_stop (Optional[int]): The stopping index of the range of balls to check. Defaults to 16 (`table_state.getNumBalls()`).
 
     Returns:
         int: The number of balls pocketed.
     """
+    stop = table_state.getNumBalls() if range_stop is None else range_stop
     return len(
-        [
-            i
-            for i in range(table_state.getNumBalls())
-            if table_state.getBall(i).isPocketed()
-        ]
+        [i for i in range(range_start, stop) if table_state.getBall(i).isPocketed()]
     )
 
 
@@ -283,14 +288,12 @@ def map_action_to_shot_params(
     """
     a = np.interp(action[0], [0, 0], [0, 0])
     b = np.interp(action[1], [0, 0], [0, 0])
-    theta = np.interp(action[2], [-1, 1], [15, 40])
-    # theta = np.interp(
-    #     action[2], [-1, 1], [table_state.MIN_THETA, table_state.MAX_THETA - 0.001]
-    # )
+    theta = np.interp(
+        action[2], [-1, 1], [table_state.MIN_THETA, table_state.MAX_THETA - 0.001]
+    )
     phi = np.interp(action[3], [-1, 1], [0, 360])
-    v = np.interp(action[4], [-1, 1], [0, 2])
-    # v = np.interp(action[4], [-1, 1], [0, table_state.MAX_VELOCITY])
-    return np.array([a, b, theta, phi, v], dtype=np.float64)
+    v = np.interp(action[4], [-1, 1], [0, table_state.MAX_VELOCITY - 0.001])
+    return np.array([0, 0, theta, phi, v], dtype=np.float64)
 
 
 def shot_params_from_action(
@@ -307,6 +310,39 @@ def shot_params_from_action(
         ff.ShotParams: The shot parameters corresponding to the given action.
     """
     return ff.ShotParams(*map_action_to_shot_params(table_state, action))
+
+
+def action_to_shot(action: np.ndarray, action_space: spaces.Box) -> ff.ShotParams:
+    """
+    Maps the given action values to the corresponding action space.
+    """
+    MIN_OFFSET = 0  # -1?
+    MAX_OFFSET = 0  # 1?
+    MIN_PHI = 0
+    MAX_PHI = 360
+    MIN_THETA = ff.TableState.MIN_THETA
+    MAX_THETA = ff.TableState.MAX_THETA
+    MAX_VELOCITY = ff.TableState.MAX_VELOCITY
+
+    a = np.interp(
+        action[0], [action_space.low[0], action_space.high[0]], [MIN_OFFSET, MAX_OFFSET]
+    )
+    b = np.interp(
+        action[1], [action_space.low[1], action_space.high[1]], [MIN_OFFSET, MAX_OFFSET]
+    )
+    theta = np.interp(
+        action[2], [action_space.low[2], action_space.high[2]], [MIN_THETA, MAX_THETA]
+    )
+    phi = np.interp(
+        action[3], [action_space.low[3], action_space.high[3]], [MIN_PHI, MAX_PHI]
+    )
+    velocity = np.interp(
+        action[4], [action_space.low[4], action_space.high[4]], [0, MAX_VELOCITY]
+    )
+
+    # print(f"a: {a}, b: {b}, theta: {theta}, phi: {phi}, velocity: {velocity}")
+
+    return ff.ShotParams(a, b, theta, phi, velocity)
 
 
 def normalize_ball_positions(ball_positions: np.ndarray) -> np.ndarray:
@@ -379,13 +415,24 @@ def get_ball_positions_id(table_state: ff.TableState) -> np.ndarray:
     """
     balls = []
     for i in range(table_state.getNumBalls()):
-        pos = table_state.getBall(i).getPos()
-        balls.append((i, [pos.x, pos.y]))
+        ball = table_state.getBall(i)
+        pos = ball.getPos()
+        balls.append([ball.getID(), pos.x, pos.y])
+
     balls = np.array(balls)
     return balls
 
 
 def is_pocketed_state(state: int) -> bool:
+    """
+    Check if the given state represents a pocketed ball.
+
+    Args:
+        state (int): The state of the ball.
+
+    Returns:
+        bool: True if the ball is pocketed, False otherwise.
+    """
     return (
         state == ff.Ball.POCKETED_NE
         or state == ff.Ball.POCKETED_NW
@@ -394,3 +441,59 @@ def is_pocketed_state(state: int) -> bool:
         or state == ff.Ball.POCKETED_SE
         or state == ff.Ball.POCKETED_SW
     )
+
+
+def shotparams_to_string(shot_params: ff.ShotParams, separator: str = ", ") -> str:
+    """
+    Converts a ShotParams object to a string representation.
+
+    Args:
+        shot_params (ff.ShotParams): The ShotParams object to convert.
+        separator (str, optional): The separator to use between each parameter. Defaults to ", ".
+
+    Returns:
+        str: The string representation of the ShotParams object.
+    """
+    return separator.join([str(param) for param in shotparams_to_list(shot_params)])
+
+
+def shotparams_to_list(shot_params: ff.ShotParams) -> list:
+    """
+    Converts the given ShotParams object into a list.
+
+    Args:
+        shot_params (ff.ShotParams): The ShotParams object to be converted.
+
+    Returns:
+        list: A list containing the values of the ShotParams object in the following order:
+              [a, b, theta, phi, v]
+    """
+    return [
+        shot_params.a,
+        shot_params.b,
+        shot_params.theta,
+        shot_params.phi,
+        shot_params.v,
+    ]
+
+
+def table_state_to_string(table_state: ff.TableState) -> str:
+    """
+    Converts a TableState object to a string representation.
+
+    Args:
+        table_state (ff.TableState): The TableState object to convert.
+
+    Returns:
+        str: The string representation of the TableState object.
+    """
+
+    strs = []
+    for i in range(table_state.getNumBalls()):
+        ball: ff.Ball = table_state.getBall(i)
+        pos = ball.getPos()
+        id: str = ball.getIDString()
+        state: str = ball.getStateString()
+        strs.append(f"{id.upper():8}  ({pos.x:.2f}, {pos.y:.2f})  {state.upper():14}")
+
+    return "\n".join(strs)

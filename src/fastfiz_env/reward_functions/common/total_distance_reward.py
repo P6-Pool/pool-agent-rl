@@ -1,11 +1,12 @@
 import numpy as np
 from ..reward_function import RewardFunction
-from ....utils.fastfiz import (
+from ...utils.fastfiz import (
     distances_to_closest_pocket,
     get_ball_positions,
     num_balls_in_play,
     pocket_centers,
 )
+import fastfiz as ff
 
 
 class TotalDistanceReward(RewardFunction):
@@ -14,9 +15,15 @@ class TotalDistanceReward(RewardFunction):
     """
 
     def reset(self, table_state) -> None:
+        super().reset(table_state)
         self.pockets = pocket_centers(table_state)
 
-    def get_reward(self, prev_table_state, table_state, impossible_shot) -> float:
+    def reward(
+        self,
+        prev_table_state: ff.TableState,
+        table_state: ff.TableState,
+        action: np.ndarray,
+    ) -> float:
         """
         Reward function that gives a reward based on the total distance of the balls to the centers of the pockets.
         """
@@ -25,4 +32,4 @@ class TotalDistanceReward(RewardFunction):
         total_distance = np.sum(
             distances_to_closest_pocket(ball_positions, self.pockets)
         )
-        return float(total_distance)
+        return total_distance

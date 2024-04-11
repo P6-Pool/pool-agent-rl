@@ -2,7 +2,7 @@ from ..reward_function import Weight
 
 
 ConstantWeight = 1
-NegativeConstantWeight = -1
+NegativeConstantWeight = -ConstantWeight
 
 
 def ConstantWeightMaxSteps(num_balls: int, current_step: int, max_steps: int) -> float:

@@ -7,6 +7,7 @@ from .reward_functions import (
     CombinedReward,
     BinaryReward,
     DefaultReward,
+    WinningReward,
 )
 from . import fastfiz, wrappers, envs
 
@@ -15,6 +16,7 @@ __all__ = [
     "CombinedReward",
     "BinaryReward",
     "DefaultReward",
+    "WinningReward",
     "fastfiz",
     "wrappers",
     "envs",

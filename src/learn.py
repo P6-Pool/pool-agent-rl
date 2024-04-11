@@ -6,10 +6,11 @@ from stable_baselines3.common.callbacks import (
 )
 from stable_baselines3 import PPO
 import fastfiz_env
-from fastfiz_env.utils import DefaultReward
+from fastfiz_env.utils import DefaultReward, WinningReward
 from fastfiz_env.utils.reward_functions.common import *
 import os
 from fastfiz_env.utils.wrappers import FastFizActionWrapper, ActionSpaces
+from torch.nn import ReLU
 
 
 # Get next version
@@ -26,9 +27,9 @@ else:
 
 
 # Settings
-MAX_EP_STEPS = 15
+MAX_EP_STEPS = 10
 BALLS = 2
-N_ENVS = 8
+N_ENVS = 4
 ACTION_ID = ActionSpaces.NO_OFFSET_3D
 
 # Paths
@@ -38,6 +39,27 @@ TB_LOGS_DIR = "logs/tb_logs/"
 LOGS_DIR = f"logs/{MODEL_NAME}"
 MODEL_DIR = f"models/{MODEL_NAME}/"
 BEST_MODEL_DIR = f"models/{MODEL_NAME}/best/"
+
+
+hyperparameters = {
+    "batch_size": 256,
+    "n_steps": 256,
+    "gamma": 0.9,
+    "learning_rate": 0.000145540594755511612,
+    "ent_coef": 0.04088822213828693,
+    "clip_range": 0.4,
+    "n_epochs": 1,
+    "gae_lambda": 0.92,
+    "max_grad_norm": 2,
+    "vf_coef": 0.10074536077062124,
+    "sde_sample_freq": 8,
+    "policy_kwargs": {
+        "log_std_init": -0.36854877110355,
+        "net_arch": dict(pi=[64], vf=[64]),
+        "activation_fn": ReLU,
+        "ortho_init": False,
+    },
+}
 
 
 def make_env():
@@ -53,7 +75,14 @@ def make_env():
 
 
 env = make_vec_env(make_env, n_envs=N_ENVS)
-model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=TB_LOGS_DIR, device="cpu")
+model = PPO(
+    "MlpPolicy",
+    env,
+    verbose=1,
+    tensorboard_log=TB_LOGS_DIR,
+    device="cpu",
+    **hyperparameters,
+)
 
 
 checkpoint_callback = CheckpointCallback(

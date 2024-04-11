@@ -83,7 +83,7 @@ class FastFizActionWrapper(ActionWrapper):
         super().__init__(env)
         self.env = env
         self.action_space_id = action_space_id
-        self.action_space = self.get_action_space(action_space_id)
+        self.action_space = self._get_action_space(action_space_id)
 
     def action(self, action):
 

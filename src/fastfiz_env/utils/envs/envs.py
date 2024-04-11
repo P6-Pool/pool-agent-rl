@@ -9,7 +9,7 @@ def game_won(table_state: ff.TableState) -> bool:
     if table_state.getBall(0).isPocketed():
         return False
     for i in range(1, table_state.getNumBalls()):
-        if not table_state.getBall(i).isPocketed():
+        if table_state.getBall(i).isInPlay():
             return False
     return True
 

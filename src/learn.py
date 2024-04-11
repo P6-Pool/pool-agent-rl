@@ -6,10 +6,10 @@ from stable_baselines3.common.callbacks import (
 )
 from stable_baselines3 import PPO
 import fastfiz_env
-from fastfiz_env.utils import DefaultReward, WinningReward
-from fastfiz_env.utils.reward_functions.common import *
+from fastfiz_env.reward_functions import DefaultReward, WinningReward
+from fastfiz_env.reward_functions.common import *
 import os
-from fastfiz_env.utils.wrappers import FastFizActionWrapper, ActionSpaces
+from fastfiz_env.wrappers import FastFizActionWrapper, ActionSpaces
 from torch.nn import ReLU
 
 

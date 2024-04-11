@@ -34,7 +34,10 @@ class SimpleFastFiz(gym.Env):
         self.max_episode_steps = None
 
     def _max_episode_steps(self):
-        if self.get_wrapper_attr("_time_limit_max_episode_steps") is not None:
+        if (
+            hasattr(SimpleFastFiz, "_time_limit_max_episode_steps")
+            and self.get_wrapper_attr("_time_limit_max_episode_steps") is not None
+        ):
             self.max_episode_steps = self.get_wrapper_attr(
                 "_time_limit_max_episode_steps"
             )
@@ -73,12 +76,6 @@ class SimpleFastFiz(gym.Env):
         terminated = self._is_terminal_state()
         truncated = False
         info = self._get_info()
-
-        pocketed = num_balls_pocketed(self.table_state)
-        if pocketed > self._prev_pocketed:
-            self._prev_pocketed = pocketed
-        else:
-            reward = min(-1, reward - 0.3)
 
         return observation, reward, terminated, truncated, info
 

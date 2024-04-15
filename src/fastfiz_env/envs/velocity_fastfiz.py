@@ -83,7 +83,7 @@ class VelocityFastFiz(gym.Env):
 
         observation = self._get_observation(prev_table_state, event_list)
         reward = self.reward.get_reward(
-            prev_table_state, self.table_state, impossible_shot
+            prev_table_state, self.table_state, action
         )
         terminated = self._is_terminal_state()
         truncated = False

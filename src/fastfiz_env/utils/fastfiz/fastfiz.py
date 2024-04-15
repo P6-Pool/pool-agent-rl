@@ -345,7 +345,9 @@ def action_to_shot(action: np.ndarray, action_space: spaces.Box) -> ff.ShotParam
     return ff.ShotParams(a, b, theta, phi, velocity)
 
 
-def normalize_ball_positions(ball_positions: np.ndarray) -> np.ndarray:
+def normalize_ball_positions(
+    ball_positions: np.ndarray[float, np.dtype[np.float32]]
+) -> np.ndarray[float, np.dtype[np.float32]]:
     """
     Normalize the ball positions to be within the range [0, 1].
 
@@ -355,8 +357,8 @@ def normalize_ball_positions(ball_positions: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: The normalized ball positions.
     """
-    width = ff.Table.TABLE_WIDTH
-    length = ff.Table.TABLE_LENGTH
+    width: float = ff.Table.TABLE_WIDTH
+    length: float = ff.Table.TABLE_LENGTH
 
     return ball_positions / np.array([width, length])
 

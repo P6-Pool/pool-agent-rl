@@ -1,16 +1,16 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Union
+from typing import Callable, Optional, Union
 import fastfiz as ff
-from .reward_function import RewardFunction
+from .reward_function import RewardFunction, Weight
 import numpy as np
 
 
 class BinaryReward(RewardFunction, ABC):
     def __init__(
         self,
-        weight: Union[float, Callable[[int, int, int], float]] = 1,
+        weight: Union[Weight, float],
         *,
-        max_episode_steps: int = None,
+        max_episode_steps: Optional[int] = None,
         short_circuit: bool = True,
     ) -> None:
         """

@@ -2,23 +2,29 @@ import numpy as np
 import gymnasium as gym
 import fastfiz as ff
 from gymnasium import spaces
+
+from fastfiz_env.envs.utils import game_won, terminal_state
 from ..utils.fastfiz import (
-    create_table_state,
     shot_params_from_action,
     get_ball_positions,
+    create_random_table_state,
     get_ball_velocity,
     normalize_ball_positions,
+    normalize_ball_velocity,
+    is_pocketed_state,
+    GameBall,
 )
 from ..reward_functions import RewardFunction, DefaultReward
 from typing import Optional
 import warnings
+import vectormath as vmath
 
 
-class VelocityFastFiz(gym.Env):
+class FramesFastFiz(gym.Env):
     """Base class for FastFiz environments."""
 
     EPSILON_THETA = 0.001  # To avoid max theta (from FastFiz.h)
-    EVNET_SEQUENCE_LENGTH = 100
+    EVNET_SEQUENCE_LENGTH = 10
     TOTAL_BALLS = 16  # Including the cue ball
 
     def __init__(
@@ -33,9 +39,18 @@ class VelocityFastFiz(gym.Env):
 
         self.num_balls = num_balls
         self.reward = reward_function
-        self.table_state = create_table_state(self.num_balls)
+        self.table_state = create_random_table_state(self.num_balls)
         self.observation_space = self._observation_space()
         self.action_space = self._action_space()
+        self.max_episode_steps = None
+
+    def _max_episode_steps(self):
+        if self.get_wrapper_attr("_time_limit_max_episode_steps") is not None:
+            self.max_episode_steps = self.get_wrapper_attr(
+                "_time_limit_max_episode_steps"
+            )
+            print(f"Setting max episode steps to {self.max_episode_steps}")
+            self.reward.max_episode_steps = self.max_episode_steps
 
     def reset(
         self, *, seed: Optional[int] = None, options: Optional[dict] = None
@@ -45,29 +60,39 @@ class VelocityFastFiz(gym.Env):
         """
         super().reset(seed=seed)
 
-        self.table_state = create_table_state(self.num_balls)
+        if self.max_episode_steps is None:
+            self._max_episode_steps()
+
+        self.table_state = create_random_table_state(self.num_balls, seed=seed)
         self.reward.reset(self.table_state)
-        observation = self._get_observation(self.table_state, [])
+        observation = self._compute_observation(self.table_state, None)
         info = self._get_info()
 
         return observation, info
 
     def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, dict]:
-        """f
+        """
         Execute an action in the environment.
         """
+
         prev_table_state = ff.TableState(self.table_state)
 
-        shot_params = shot_params_from_action(self.table_state, action)
+        # shot_params = shot_params_from_action(self.table_state, [0, 0, *action])
+        shot_params = ff.ShotParams(*action)
 
         impossible_shot = not self._possible_shot(shot_params)
 
-        event_list = []
+        # Check for nans in action
+        if np.isnan(action).any():
+            print(f"Nan in action: {action}")
+            impossible_shot = True
+        # print(f"Action: T: {shot_params.theta} P: {shot_params.phi} V: {shot_params.v}")
+
+        shot = None
         if not impossible_shot:
             shot = self.table_state.executeShot(shot_params)
-            event_list = shot.getEventList()
 
-        observation = self._get_observation(prev_table_state, event_list)
+        observation = self._compute_observation(prev_table_state, shot)
         reward = self.reward.get_reward(prev_table_state, self.table_state, action)
         terminated = self._is_terminal_state()
         truncated = False
@@ -75,72 +100,16 @@ class VelocityFastFiz(gym.Env):
 
         return observation, reward, terminated, truncated, info
 
-    def render() -> None:
+    def render(self) -> None:
         """
         Render the environment.
         """
         raise NotImplementedError("This method must be implemented")
 
-    def _get_observation(
-        self, prev_table_state: ff.TableState, event_list: ff.EventVector
-    ):
-        return VelocityFastFiz.get_observation(
-            prev_table_state, self.table_state, event_list
-        )
-
-    @staticmethod
-    def get_observation(
-        prev_table_state: ff.TableState,
-        table_state: ff.TableState,
-        event_list: ff.EventVector,
-    ):
-        initial_event_seq = VelocityFastFiz.event_sequence_from_table_state(
-            prev_table_state
-        )
-        obs_sequence = np.zeros(
-            (VelocityFastFiz.EVNET_SEQUENCE_LENGTH, VelocityFastFiz.TOTAL_BALLS, 4)
-        )
-
-        obs_sequence[0] = initial_event_seq
-        for i, event in enumerate(event_list, start=1):
-            obs_sequence[i] = obs_sequence[i - 1]
-            event: ff.Event = event
-            ball1_id = event.getBall1()
-            ball2_id = event.getBall2()
-            ball1: ff.Ball = event.getBall1Data()
-            ball2: ff.Ball = event.getBall2Data()
-            ball1_pocketed = ball1.isPocketed()
-            ball1_pos = (ball1.getPos().x, ball1.getPos().y)
-            ball2_pos = (ball2.getPos().x, ball2.getPos().y)
-            ball1_vel = get_ball_velocity(ball1)
-            ball2_vel = get_ball_velocity(ball2)
-
-            obs_sequence[i][ball1_id] = [
-                *ball1_pos,
-                ball1_vel,
-                int(ball1_pocketed),
-            ]
-
-            if ball2_id != ff.Ball.UNKNOWN_ID:
-                ball2_pocketed = ball2.isPocketed()
-                obs_sequence[i][ball2_id] = [
-                    *ball2_pos,
-                    ball2_vel,
-                    int(ball2_pocketed),
-                ]
-            if i == VelocityFastFiz.EVNET_SEQUENCE_LENGTH - 1:
-                final_event_seq = VelocityFastFiz.event_sequence_from_table_state(
-                    table_state
-                )
-                obs_sequence[i] = final_event_seq
-                break
-
-        return obs_sequence
-
     @staticmethod
     def event_sequence_from_table_state(table_state: ff.TableState) -> np.ndarray:
         ball_positions = normalize_ball_positions(get_ball_positions(table_state))
-        event_seq = np.zeros((VelocityFastFiz.TOTAL_BALLS, 4))
+        event_seq = np.zeros((FramesFastFiz.TOTAL_BALLS, 4))
         for i, ball in enumerate(ball_positions):
             pocketed = table_state.getBall(i).isPocketed()
             event_seq[i] = [*ball, 0, int(pocketed)]
@@ -152,16 +121,10 @@ class VelocityFastFiz(gym.Env):
         }
 
     def _is_terminal_state(self) -> bool:
-        if self.table_state.getBall(0).isPocketed():
-            return True
-
-        return self._game_won()
+        return terminal_state(self.table_state)
 
     def _game_won(self) -> bool:
-        for i in range(1, self.num_balls):
-            if not self.table_state.getBall(i).isPocketed():
-                return False
-        return True
+        return game_won(self.table_state)
 
     def _observation_space(self):
         """
@@ -175,22 +138,27 @@ class VelocityFastFiz(gym.Env):
         """
         table = self.table_state.getTable()
 
-        lower = np.full((self.TOTAL_BALLS, 4), [0, 0, 0, 0])
-        upper = np.full(
-            (self.TOTAL_BALLS, 4),
-            [table.TABLE_WIDTH, table.TABLE_LENGTH, self.table_state.MAX_VELOCITY, 1],
-        )
+        lower = np.full((self.TOTAL_BALLS, 4), [-1, -1, -1, 0])
         # upper = np.full(
         #     (self.TOTAL_BALLS, 4),
-        #     [1, 1, 1, 1],
+        #     [
+        #         table.TABLE_WIDTH,
+        #         table.TABLE_LENGTH,
+        #         self.table_state.MAX_VELOCITY * 1.580,
+        #         1,
+        #     ],
         # )
+        upper = np.full(
+            (self.TOTAL_BALLS, 4),
+            [1, 1, 1, 1],
+        )
         # Outerbox is shape (inner_box,10) inner boxes
         lower = np.full((self.EVNET_SEQUENCE_LENGTH, self.TOTAL_BALLS, 4), lower)
         upper = np.full((self.EVNET_SEQUENCE_LENGTH, self.TOTAL_BALLS, 4), upper)
         outer_box = spaces.Box(
             low=lower,
             high=upper,
-            dtype=np.float64,
+            dtype=np.float32,
         )
 
         return outer_box
@@ -209,9 +177,9 @@ class VelocityFastFiz(gym.Env):
         All values are in the range `[0, 1]`.
         """
         return spaces.Box(
-            low=np.array([0.0, 0.0, 0.0, 0.0, 0.0]),
-            high=np.array([0.0, 0.0, 1, 1, 1]),
-            dtype=np.float64,
+            low=np.array([-1, -1, -1]),
+            high=np.array([1, 1, 1]),
+            dtype=np.float32,
         )
 
     def _possible_shot(self, shot_params: ff.ShotParams) -> bool:
@@ -222,3 +190,44 @@ class VelocityFastFiz(gym.Env):
             self.table_state.isPhysicallyPossible(shot_params)
             == ff.TableState.OK_PRECONDITION
         )
+
+    def _compute_observation(
+        self, prev_table_state: ff.TableState, shot: Optional[ff.Shot]
+    ) -> np.ndarray:
+        frames = self.EVNET_SEQUENCE_LENGTH
+        frames_seq = np.zeros((frames, self.TOTAL_BALLS, 4), dtype=np.float32)
+
+        if shot is None:
+            ball_positions = get_ball_positions(self.table_state)
+            ball_positions = normalize_ball_positions(ball_positions) * 2 - 1
+            for frame in range(frames):
+                for i, pos in enumerate(ball_positions):
+                    pocketed = self.table_state.getBall(i).isPocketed()
+                    frames_seq[frame][i] = [*pos, -1, pocketed]
+            return frames_seq
+
+        table: ff.Table = self.table_state.getTable()
+        rolling = table.MU_ROLLING
+        sliding = table.MU_SLIDING
+        gravity = table.g
+        total_time = shot.getDuration()
+        interval = total_time / (frames - 1)
+
+        game_balls: list[GameBall] = []
+        for i in range(self.num_balls):
+            position = prev_table_state.getBall(i).getPos()
+            pos_vec = vmath.Vector2(position.x, position.y)
+            game_balls.append(GameBall(0, i, pos_vec, ff.Ball.STATIONARY))
+
+        for frame in range(frames):
+            time = frame * interval
+            for gb in game_balls:
+                gb.update(time, shot, sliding, rolling, gravity)
+                pocketed = is_pocketed_state(gb.state)
+                frames_seq[frame][gb.number] = [
+                    *normalize_ball_positions((gb.position.x, gb.position.y)),  # type: ignore
+                    normalize_ball_velocity(np.hypot(gb.velocity.x, gb.velocity.y)) * 2
+                    - 1,
+                    pocketed,
+                ]
+        return frames_seq

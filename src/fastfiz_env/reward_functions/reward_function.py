@@ -25,7 +25,12 @@ class RewardFunction(ABC):
     Abstract base class for reward functions.
     """
 
-    def __init__(self, weight: Weight = 1, *, max_episode_steps: int = None) -> None:
+    def __init__(
+        self,
+        weight: Union[Weight, float] = 1,
+        *,
+        max_episode_steps: Optional[int] = None,
+    ) -> None:
         """
         Initializes the reward function.
 
@@ -37,6 +42,10 @@ class RewardFunction(ABC):
         super().__init__()
         self.__reset_called = False
         self.__weight = weight
+        # if max_episode_steps is None:
+        #     raise ValueError(
+        #         "max_episode_steps must be provided when instantiating a RewardFunction. Try using MaxEpisodeStepsInjectionWrapper with your environment."
+        #     )
         self.max_episode_steps = max_episode_steps
         self.current_step = 0
         self.num_balls = 0

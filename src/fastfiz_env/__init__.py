@@ -63,3 +63,9 @@ register(
     entry_point="fastfiz_env.envs:TestingFastFiz",
     additional_wrappers=(wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),),
 )
+
+register(
+    id="FramesFastFiz-v0",
+    entry_point="fastfiz_env.envs:FramesFastFiz",
+    additional_wrappers=(wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),),
+)

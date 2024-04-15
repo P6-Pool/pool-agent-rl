@@ -14,7 +14,7 @@ from typing import Optional
 from ..reward_functions import RewardFunction, DefaultReward
 
 
-class SimpleFastFiz(gym.Env):
+class ReplayFastFiz(gym.Env):
     """FastFiz environment for using different action spaces."""
 
     TOTAL_BALLS = 16
@@ -48,7 +48,7 @@ class SimpleFastFiz(gym.Env):
         if self.max_episode_steps is None:
             self._max_episode_steps()
 
-        self.table_state = create_random_table_state(self.num_balls)
+        self.table_state = create_random_table_state(self.num_balls, seed=seed)
         self.reward.reset(self.table_state)
         self._prev_pocketed = 0
 
@@ -62,14 +62,14 @@ class SimpleFastFiz(gym.Env):
         Execute an action in the environment.
         """
 
-        prev_table_state = ff.TableState(self.table_state)
+        self.prev_table_state = ff.TableState(self.table_state)
         shot_params = ff.ShotParams(*action)
 
         if self._possible_shot(shot_params):
             self.table_state.executeShot(shot_params)
 
         observation = self._get_observation()
-        reward = self.reward.get_reward(prev_table_state, self.table_state, action)
+        reward = self.reward.get_reward(self.prev_table_state, self.table_state, action)
         terminated = self._is_terminal_state()
         truncated = False
         info = self._get_info()
@@ -79,13 +79,17 @@ class SimpleFastFiz(gym.Env):
     def _get_observation(self):
         ball_positions = get_ball_positions(self.table_state)[: self.TOTAL_BALLS]
         ball_positions = normalize_ball_positions(ball_positions) * 2 - 1
-        observation = np.zeros((self.TOTAL_BALLS, 2), dtype=np.float32)
+        observation = np.zeros((self.TOTAL_BALLS, 3), dtype=np.float32)
         for i, ball_pos in enumerate(ball_positions):
-            observation[i] = [*ball_pos]
+            pocketed = self.table_state.getBall(i).isPocketed()
+            observation[i] = [*ball_pos, int(pocketed)]
 
         return np.array(observation)
 
-    def _observation_space(self) -> spaces.Box:
+    def compute_reward(self, achieved_goal, desired_goal, info):
+        pass
+
+    def _observation_space(self) -> spaces.Dict:
         """
         Get the observation space of the environment.
 
@@ -95,9 +99,18 @@ class SimpleFastFiz(gym.Env):
 
         All values are in the range `[-1, 1]`.
         """
-        lower = np.full((self.TOTAL_BALLS, 2), [-1, -1])
-        upper = np.full((self.TOTAL_BALLS, 2), [1, 1])
-        return spaces.Box(low=lower, high=upper, dtype=np.float32)
+        lower = np.full((self.TOTAL_BALLS, 3), [-1, -1, 0])
+        upper = np.full((self.TOTAL_BALLS, 3), [1, 1, 1])
+
+        obs_space = spaces.Dict(
+            {
+                "observation": spaces.Box(low=lower, high=upper, dtype=np.float32),
+                "achieved_goal": spaces.Box(low=lower, high=upper, dtype=np.float32),
+                "desired_goal": spaces.Box(low=lower, high=upper, dtype=np.float32),
+            }
+        )
+
+        return obs_space
 
     def _action_space(self) -> spaces.Box:
         """

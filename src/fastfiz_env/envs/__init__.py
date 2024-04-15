@@ -6,10 +6,12 @@ from . import utils
 from .velocity_fastfiz import VelocityFastFiz
 from .simple_fastfiz import SimpleFastFiz
 from .testing_fastfiz import TestingFastFiz
+from .frames_fastfiz import FramesFastFiz
 
 __all__ = [
     "utils",
     "VelocityFastFiz",
     "SimpleFastFiz",
     "TestingFastFiz",
+    "FramesFastFiz",
 ]

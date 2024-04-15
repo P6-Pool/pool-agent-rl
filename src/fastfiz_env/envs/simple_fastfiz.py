@@ -35,8 +35,8 @@ class SimpleFastFiz(gym.Env):
 
     def _max_episode_steps(self):
         if (
-            hasattr(SimpleFastFiz, "_time_limit_max_episode_steps")
-            and self.get_wrapper_attr("_time_limit_max_episode_steps") is not None
+            #hasattr(SimpleFastFiz, "_time_limit_max_episode_steps")
+            self.get_wrapper_attr("_time_limit_max_episode_steps") is not None
         ):
             self.max_episode_steps = self.get_wrapper_attr(
                 "_time_limit_max_episode_steps"

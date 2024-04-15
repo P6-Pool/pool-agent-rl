@@ -26,21 +26,21 @@ def get_play_config() -> dict:
 def observation(table_state):
     ball_positions = positions(table_state)[:16]
     ball_positions = normalize_ball_positions(ball_positions) * 2 - 1
-    observation = np.zeros((16, 3), dtype=np.float32)
+    observation = np.zeros((16, 2), dtype=np.float32)
     for i, ball_pos in enumerate(ball_positions):
-        observation[i] = [*ball_pos, int(table_state.getBall(i).isPocketed())]
+        observation[i] = [*ball_pos]
     return np.array(observation)
 
 
 def positions(table_state):
     balls = []
     for i in range(table_state.getNumBalls()):
-        # if table_state.getBall(i).isPocketed():
-        #     # balls.append((0, 0))
-        #     pass
-        # else:
-        pos = table_state.getBall(i).getPos()
-        balls.append((pos.x, pos.y))
+        if table_state.getBall(i).isPocketed():
+            # balls.append((0, 0))
+            pass
+        else:
+            pos = table_state.getBall(i).getPos()
+            balls.append((pos.x, pos.y))
     balls = np.array(balls)
     return balls
 
@@ -94,7 +94,7 @@ def main() -> None:
         print("Agent: No possible shot found in 10 attempts.")
         return None
 
-    play(decide_shot, balls=3, episodes=100)
+    play(decide_shot, balls=2, episodes=100)
 
 
 if __name__ == "__main__":

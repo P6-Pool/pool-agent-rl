@@ -33,8 +33,8 @@ N_ENVS = 4
 ACTION_ID = ActionSpaces.NO_OFFSET_3D
 
 # Paths
-ENV_NAME = "FramesFastFiz-v0"
-MODEL_NAME = f"ppo-v{VERSION}-{ENV_NAME.split('FastFiz')[0].lower()}-{BALLS}_balls-{ACTION_ID.name.lower()}"
+ENV_NAME = "SimpleFastFiz-v0"
+MODEL_NAME = f"ppo-v{VERSION}-{ENV_NAME.split('FastFiz')[0].lower()}-{BALLS}_balls-{ACTION_ID.name.lower()}-100_max_steps"
 TB_LOGS_DIR = "logs/tb_logs/"
 LOGS_DIR = f"logs/{MODEL_NAME}"
 MODEL_DIR = f"models/{MODEL_NAME}/"

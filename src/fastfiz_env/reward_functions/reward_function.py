@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 import fastfiz as ff
-from typing import Union, Callable, Optional
+from typing import Union, Callable, Optional, TypeAlias
 import numpy as np
 from fastfiz_env.utils.fastfiz.fastfiz import num_balls_in_play
 
 
-Weight = Union[float, Callable[[int, int, Optional[int]], float]]
+Weight: TypeAlias = Union[float, Callable[[int, int, Optional[int]], float]]
 """
 Type alias for a weight value or a callable that calculates the weight of a reward function.
 
@@ -68,7 +68,7 @@ class RewardFunction(ABC):
         self,
         prev_table_state: ff.TableState,
         table_state: ff.TableState,
-        action: np.ndarray,
+        action: np.ndarray[float, np.dtype[Union[np.float32, np.float64]]],
     ) -> float:
         """
         Calculates the weigthed reward for a given table state transition.

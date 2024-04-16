@@ -8,7 +8,7 @@ import numpy as np
 class BinaryReward(RewardFunction, ABC):
     def __init__(
         self,
-        weight: Union[Weight, float],
+        weight: Union[Weight, float] = 1,
         *,
         max_episode_steps: Optional[int] = None,
         short_circuit: bool = True,

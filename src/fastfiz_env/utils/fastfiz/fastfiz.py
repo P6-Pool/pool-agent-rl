@@ -5,11 +5,11 @@ from gymnasium import spaces
 
 POCKETS = [
     ff.Table.SW,
-    ff.Table.SE,
     ff.Table.W,
-    ff.Table.E,
     ff.Table.NW,
     ff.Table.NE,
+    ff.Table.E,
+    ff.Table.SE,
 ]
 """
 List of pocket positions.
@@ -109,6 +109,31 @@ def pocket_centers(table_state: ff.TableState) -> np.ndarray:
         pocket_positions.append((pocket_center.x, pocket_center.y))
 
     return np.array(pocket_positions)
+
+
+def ball_state_to_pocket(ball_state: int) -> int:
+    # 5: SW
+    # 6: W
+    # 7: NW
+    # 8: NE
+    # 9: E
+    # 10: SE
+    return POCKETS[ball_state - 5]
+
+
+def get_pocket_center(pocket: int) -> np.ndarray:
+    """
+    Get the center of the specified pocket.
+
+    Args:
+        pocket (int): The pocket index.
+
+    Returns:
+        np.ndarray: The x and y coordinates of the pocket center.
+    """
+    table: ff.Table = ff.Table()
+    pocket_center = table.getPocketCenter(pocket)
+    return np.array([pocket_center.x, pocket_center.y])
 
 
 def distance_to_pocket(ball_position: np.ndarray, pocket: np.ndarray) -> float:

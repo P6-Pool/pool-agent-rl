@@ -1,12 +1,12 @@
 from gymnasium.envs.registration import EnvSpec
 import gymnasium as gym
-from .reward_functions import RewardFunction
+from .reward_functions import RewardFunction, DefaultReward
 
 
 def make(
     env_id: str | EnvSpec,
     *,
-    reward_function: RewardFunction,
+    reward_function: RewardFunction = DefaultReward,
     num_balls: int = 16,
     max_episode_steps: int = 100,
     disable_env_checker: bool = True,

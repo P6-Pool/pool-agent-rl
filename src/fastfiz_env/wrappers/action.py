@@ -56,8 +56,12 @@ class ActionSpaces(Enum):
     - phi: The angle of the in the xz-plane.
     - velocity: The velocity of the shot.
     """
+    VECTOR_2D = (5,)
+    """
+    2D vector
+    """
 
-    OUTPUT = (5,)
+    OUTPUT = (6,)
     """
     Output of FastFizActionWrapper.
     """
@@ -96,6 +100,12 @@ class FastFizActionWrapper(ActionWrapper):
             high=np.array([1, 1, 1]),
             dtype=np.float32,
         ),
+        "VECTOR_2D": spaces.Box(
+            low=np.array([-1, -1]),
+            high=np.array([1, 1]),
+            shape=(2,),
+            dtype=np.float32,
+        ),
         "OUTPUT": spaces.Box(
             low=np.array([-1, -1, 0, 0, 0]),
             high=np.array([1, 1, 70, 360, 10]),
@@ -113,7 +123,9 @@ class FastFizActionWrapper(ActionWrapper):
         self.action_space_id = action_space_id
         self.action_space = self.SPACES[action_space_id.name]
 
-    def action(self, action):
+    def action(
+        self, action: np.ndarray[float, np.dtype[np.float32]]
+    ) -> np.ndarray[float, np.dtype[np.float32]]:
 
         # Offset a and b are always 0
         offset_a = 0
@@ -133,6 +145,20 @@ class FastFizActionWrapper(ActionWrapper):
                 vec_velocity = vec_length(vec_theta + vec_phi)
                 velocity = np.interp(
                     vec_velocity, (0, 2), (self.MIN_VELOCITY, self.MAX_VELOCITY)
+                )
+
+            case ActionSpaces.VECTOR_2D:
+                if np.allclose(action, 0):
+                    return np.array([offset_a, offset_b, 0, 0, 0])
+                theta = 20
+                phi = np.degrees(np.arctan2(action[1], action[0])) % 360
+                # phi = np.interp(theta, (0, 360), (self.MIN_PHI, self.MAX_PHI))
+                offset_b = 11
+                velocity = np.hypot(*action)
+                velocity = np.interp(
+                    velocity,
+                    (0, np.sqrt(2)),
+                    (self.MIN_VELOCITY, self.MAX_VELOCITY - 5),
                 )
 
             case ActionSpaces.NO_OFFSET_3D:

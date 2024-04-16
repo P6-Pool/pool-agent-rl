@@ -69,3 +69,9 @@ register(
     entry_point="fastfiz_env.envs:FramesFastFiz",
     additional_wrappers=(wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),),
 )
+
+register(
+    id="PocketsFastFiz-v0",
+    entry_point="fastfiz_env.envs:PocketsFastFiz",
+    additional_wrappers=(wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),),
+)

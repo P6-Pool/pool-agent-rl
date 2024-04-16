@@ -27,14 +27,14 @@ else:
 
 
 # Settings
-MAX_EP_STEPS = 100
+MAX_EP_STEPS = 20
 BALLS = 2
 N_ENVS = 4
-ACTION_ID = ActionSpaces.NO_OFFSET_3D
+ACTION_ID = ActionSpaces.VECTOR_2D
 
 # Paths
 ENV_NAME = "SimpleFastFiz-v0"
-MODEL_NAME = f"ppo-v{VERSION}-{ENV_NAME.split('FastFiz')[0].lower()}-{BALLS}_balls-{ACTION_ID.name.lower()}-100_max_steps"
+MODEL_NAME = f"ppo-v{VERSION}-{ENV_NAME.split('FastFiz')[0].lower()}-{BALLS}_balls-{ACTION_ID.name.lower()}"
 TB_LOGS_DIR = "logs/tb_logs/"
 LOGS_DIR = f"logs/{MODEL_NAME}"
 MODEL_DIR = f"models/{MODEL_NAME}/"

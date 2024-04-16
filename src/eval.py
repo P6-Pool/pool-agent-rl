@@ -2,6 +2,11 @@ import fastfiz as ff
 import os
 from fastfiz_renderer import GameHandler
 import numpy as np
+import fastfiz_env
+from fastfiz_env.envs.frames_fastfiz import FramesFastFiz
+from fastfiz_env.envs.simple_fastfiz import SimpleFastFiz
+from fastfiz_env.reward_functions import reward_function
+from fastfiz_env.reward_functions.default_reward import DefaultReward
 from fastfiz_env.utils.fastfiz import (
     create_random_table_state,
     get_ball_positions,
@@ -12,7 +17,7 @@ from stable_baselines3 import PPO
 from typing import Optional, Callable
 import argparse
 
-from fastfiz_env.wrappers.action import FastFizActionWrapper
+from fastfiz_env.wrappers.action import ActionSpaces, FastFizActionWrapper
 from fastfiz_env.wrappers.utils import spherical_coordinates
 
 
@@ -62,6 +67,43 @@ def play(
     )
 
 
+env = FramesFastFiz()
+env = SimpleFastFiz()
+
+
+class Agent:
+    def __init__(self, model) -> None:
+        self.prev_ts = None
+        self.model = model
+        self.env = FastFizActionWrapper(FramesFastFiz, ActionSpaces.VECTOR_2D)
+        self.shot = None
+
+    def decide_shot(self, table_state: ff.TableState) -> Optional[ff.ShotParams]:
+        if game_won(table_state):
+            print("Agent: Game Won!")
+            return None
+
+        for _ in range(10):
+            if isinstance(env, FramesFastFiz):
+                if self.prev_ts is None:
+                    obs = env.compute_observation(table_state, table_state, self.shot)
+                else:
+                    obs = env.compute_observation(self.prev_ts, table_state, self.shot)
+            else:
+                obs = env.compute_observation(table_state)
+            action, _ = self.model.predict(obs, deterministic=True)
+            action = self.env.action(action)
+            shot = ff.ShotParams(*action)
+            if possible_shot(table_state, shot):
+                self.prev_ts = ff.TableState(table_state)
+                ts = ff.TableState(table_state)
+                self.shot = ts.executeShot(shot)
+                return shot
+
+        print("Agent: No possible shot found in 10 attempts.")
+        return None
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--model", type=str, help="Path to the model file")
@@ -73,28 +115,11 @@ def main() -> None:
 
     model = PPO.load(args.model)
 
-    def decide_shot(table_state: ff.TableState) -> Optional[ff.ShotParams]:
-        if game_won(table_state):
-            print("Agent: Game Won!")
-            return None
-        obs = observation(table_state)
-        for _ in range(10):
-            action, _ = model.predict(obs, deterministic=True)
-            if np.allclose(action, 0):
-                shot = ff.ShotParams(*[0, 0, 0, 0, 0])
-            else:
-                r, theta, phi = spherical_coordinates(action)
-                theta = np.interp(theta, (0, 360), (0, 70 - 0.001))
-                phi = np.interp(phi, (0, 360), (0, 360))
-                velocity = np.interp(r, (0, np.sqrt(3)), (0, 10))
-                shot = ff.ShotParams(*[0, 0, theta, phi, velocity])
-            if possible_shot(table_state, shot):
-                return shot
+    env_vec = fastfiz_env.make("SimpleFastFiz-v0", reward_function=DefaultReward)
+    env_vec = FastFizActionWrapper(env_vec, ActionSpaces.NO_OFFSET_3D)
 
-        print("Agent: No possible shot found in 10 attempts.")
-        return None
-
-    play(decide_shot, balls=2, episodes=100)
+    agent = Agent(model)
+    play(agent.decide_shot, balls=2, episodes=100)
 
 
 if __name__ == "__main__":

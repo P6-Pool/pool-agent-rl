@@ -26,6 +26,7 @@ class FramesFastFiz(gym.Env):
     EPSILON_THETA = 0.001  # To avoid max theta (from FastFiz.h)
     EVNET_SEQUENCE_LENGTH = 10
     TOTAL_BALLS = 16  # Including the cue ball
+    num_balls = 2
 
     def __init__(
         self, reward_function: RewardFunction = DefaultReward, num_balls: int = 16
@@ -194,19 +195,28 @@ class FramesFastFiz(gym.Env):
     def _compute_observation(
         self, prev_table_state: ff.TableState, shot: Optional[ff.Shot]
     ) -> np.ndarray:
-        frames = self.EVNET_SEQUENCE_LENGTH
-        frames_seq = np.zeros((frames, self.TOTAL_BALLS, 4), dtype=np.float32)
+        return self.compute_observation(prev_table_state, self.table_state, shot)
+
+    @classmethod
+    def compute_observation(
+        cls,
+        prev_table_state: ff.TableState,
+        table_state: ff.TableState,
+        shot: Optional[ff.Shot],
+    ) -> np.ndarray:
+        frames = cls.EVNET_SEQUENCE_LENGTH
+        frames_seq = np.zeros((frames, cls.TOTAL_BALLS, 4), dtype=np.float32)
 
         if shot is None:
-            ball_positions = get_ball_positions(self.table_state)
+            ball_positions = get_ball_positions(table_state)
             ball_positions = normalize_ball_positions(ball_positions) * 2 - 1
             for frame in range(frames):
                 for i, pos in enumerate(ball_positions):
-                    pocketed = self.table_state.getBall(i).isPocketed()
+                    pocketed = table_state.getBall(i).isPocketed()
                     frames_seq[frame][i] = [*pos, -1, pocketed]
             return frames_seq
 
-        table: ff.Table = self.table_state.getTable()
+        table: ff.Table = table_state.getTable()
         rolling = table.MU_ROLLING
         sliding = table.MU_SLIDING
         gravity = table.g
@@ -214,7 +224,7 @@ class FramesFastFiz(gym.Env):
         interval = total_time / (frames - 1)
 
         game_balls: list[GameBall] = []
-        for i in range(self.num_balls):
+        for i in range(cls.num_balls):
             position = prev_table_state.getBall(i).getPos()
             pos_vec = vmath.Vector2(position.x, position.y)
             game_balls.append(GameBall(0, i, pos_vec, ff.Ball.STATIONARY))

@@ -1,9 +1,9 @@
+from logging import warn
 import fastfiz as ff
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 
-from fastfiz_env.utils.fastfiz.fastfiz import num_balls_pocketed
 from ..utils.fastfiz import (
     create_random_table_state,
     get_ball_positions,
@@ -34,11 +34,17 @@ class SimpleFastFiz(gym.Env):
         self.max_episode_steps = None
 
     def _max_episode_steps(self):
-        if self.get_wrapper_attr("_time_limit_max_episode_steps") is not None:
+        try:
             self.max_episode_steps = self.get_wrapper_attr(
                 "_time_limit_max_episode_steps"
             )
-            self.reward.max_episode_steps = self.max_episode_steps
+        except AttributeError:
+            warn.Warning(
+                "No wrapper found with max_episode_steps attribute. Setting max_episode_steps to None."
+            )
+            self.max_episode_steps = None
+
+        self.reward.max_episode_steps = self.max_episode_steps
 
     def reset(
         self, *, seed: Optional[int] = None, options: Optional[dict] = None
@@ -67,6 +73,8 @@ class SimpleFastFiz(gym.Env):
 
         if self._possible_shot(shot_params):
             self.table_state.executeShot(shot_params)
+        else:
+            print("Invalid shot")
 
         observation = self._get_observation()
         reward = self.reward.get_reward(prev_table_state, self.table_state, action)
@@ -76,14 +84,18 @@ class SimpleFastFiz(gym.Env):
 
         return observation, reward, terminated, truncated, info
 
-    def _get_observation(self):
-        ball_positions = get_ball_positions(self.table_state)[: self.TOTAL_BALLS]
+    @classmethod
+    def compute_observation(cls, table_state: ff.TableState) -> np.ndarray:
+        ball_positions = get_ball_positions(table_state)[: cls.TOTAL_BALLS]
         ball_positions = normalize_ball_positions(ball_positions) * 2 - 1
-        observation = np.zeros((self.TOTAL_BALLS, 2), dtype=np.float32)
+        observation = np.zeros((cls.TOTAL_BALLS, 2), dtype=np.float32)
         for i, ball_pos in enumerate(ball_positions):
             observation[i] = [*ball_pos]
 
         return np.array(observation)
+
+    def _get_observation(self):
+        return self.compute_observation(self.table_state)
 
     def _observation_space(self) -> spaces.Box:
         """

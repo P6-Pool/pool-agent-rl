@@ -4,6 +4,8 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 
+from fastfiz_env.utils.fastfiz.fastfiz import num_balls_in_play, num_balls_pocketed
+
 from ..utils.fastfiz import (
     create_random_table_state,
     get_ball_positions,
@@ -32,17 +34,18 @@ class SimpleFastFiz(gym.Env):
         self.action_space = self._action_space()
         self.reward = reward_function
         self.max_episode_steps = None
+        self.elapsed_steps = None
 
-    def _max_episode_steps(self):
+    def _get_time_limit_attrs(self):
         try:
-            self.max_episode_steps = self.get_wrapper_attr(
-                "_time_limit_max_episode_steps"
-            )
+            self.max_episode_steps = self.get_wrapper_attr("_max_episode_steps")
+            self.elapsed_steps = self.get_wrapper_attr("_elapsed_steps")
         except AttributeError:
             warn.Warning(
-                "No wrapper found with max_episode_steps attribute. Setting max_episode_steps to None."
+                "The environment does not have a TimeLimit and/or TimeLimitInjection wrapper. The max_episode_steps attribute will not be available."
             )
             self.max_episode_steps = None
+            self.elapsed_steps = None
 
         self.reward.max_episode_steps = self.max_episode_steps
 
@@ -51,8 +54,8 @@ class SimpleFastFiz(gym.Env):
     ) -> tuple[np.ndarray, dict]:
         super().reset(seed=seed)
 
-        if self.max_episode_steps is None:
-            self._max_episode_steps()
+        if self.max_episode_steps is None or self.elapsed_steps is None:
+            self._get_time_limit_attrs()
 
         self.table_state = create_random_table_state(self.num_balls)
         self.reward.reset(self.table_state)
@@ -73,8 +76,6 @@ class SimpleFastFiz(gym.Env):
 
         if self._possible_shot(shot_params):
             self.table_state.executeShot(shot_params)
-        else:
-            print("Invalid shot")
 
         observation = self._get_observation()
         reward = self.reward.get_reward(prev_table_state, self.table_state, action)
@@ -130,6 +131,11 @@ class SimpleFastFiz(gym.Env):
         return possible_shot(self.table_state, shot_params)
 
     def _is_terminal_state(self) -> bool:
+        pocketed = num_balls_pocketed(self.table_state)
+
+        if pocketed <= self._prev_pocketed:
+            return True
+
         return terminal_state(self.table_state)
 
     def _game_won(self) -> bool:

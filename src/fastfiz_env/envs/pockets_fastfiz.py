@@ -1,3 +1,4 @@
+from logging import warn
 import fastfiz as ff
 import numpy as np
 import gymnasium as gym
@@ -35,21 +36,28 @@ class PocketsFastFiz(gym.Env):
         self.action_space = self._action_space()
         self.reward = reward_function
         self.max_episode_steps = None
+        self.elapsed_steps = None
 
-    def _max_episode_steps(self):
-        if self.get_wrapper_attr("_time_limit_max_episode_steps") is not None:
-            self.max_episode_steps = self.get_wrapper_attr(
-                "_time_limit_max_episode_steps"
+    def _get_time_limit_attrs(self):
+        try:
+            self.max_episode_steps = self.get_wrapper_attr("_max_episode_steps")
+            self.elapsed_steps = self.get_wrapper_attr("_elapsed_steps")
+        except AttributeError:
+            warn.Warning(
+                "The environment does not have a TimeLimit and/or TimeLimitInjection wrapper. The max_episode_steps attribute will not be available."
             )
-            self.reward.max_episode_steps = self.max_episode_steps
+            self.max_episode_steps = None
+            self.elapsed_steps = None
+
+        self.reward.max_episode_steps = self.max_episode_steps
 
     def reset(
         self, *, seed: Optional[int] = None, options: Optional[dict] = None
     ) -> tuple[np.ndarray, dict]:
         super().reset(seed=seed)
 
-        if self.max_episode_steps is None:
-            self._max_episode_steps()
+        if self.max_episode_steps is None or self.elapsed_steps is None:
+            self._get_time_limit_attrs()
 
         self.table_state = create_random_table_state(self.num_balls)
         self.reward.reset(self.table_state)

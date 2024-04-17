@@ -51,7 +51,7 @@ def get_latest_run_id(log_path: str, name: str) -> int:
 
 
 def get_model_name(env_name: str, balls: int, algo: str = "PPO") -> str:
-    return f"{env_name}-{balls}_balls-{algo}".lower()
+    return f"{env_name.split('FastFiz-v0')[0]}-{balls}_balls-{algo}".lower()
 
 
 def train(

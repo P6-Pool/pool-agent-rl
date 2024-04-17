@@ -48,30 +48,30 @@ from gymnasium.envs.registration import register
 register(
     id="VelocityFastFiz-v0",
     entry_point="fastfiz_env.envs:VelocityFastFiz",
-    additional_wrappers=(wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),),
+    additional_wrappers=(wrappers.TimeLimitInjectionWrapper.wrapper_spec(),),
 )
 
 register(
     id="SimpleFastFiz-v0",
     entry_point="fastfiz_env.envs:SimpleFastFiz",
-    additional_wrappers=(wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),),
+    additional_wrappers=(wrappers.TimeLimitInjectionWrapper.wrapper_spec(),),
 )
 
 
 register(
     id="TestingFastFiz-v0",
     entry_point="fastfiz_env.envs:TestingFastFiz",
-    additional_wrappers=(wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),),
+    additional_wrappers=(wrappers.TimeLimitInjectionWrapper.wrapper_spec(),),
 )
 
 register(
     id="FramesFastFiz-v0",
     entry_point="fastfiz_env.envs:FramesFastFiz",
-    additional_wrappers=(wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),),
+    additional_wrappers=(wrappers.TimeLimitInjectionWrapper.wrapper_spec(),),
 )
 
 register(
     id="PocketsFastFiz-v0",
     entry_point="fastfiz_env.envs:PocketsFastFiz",
-    additional_wrappers=(wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),),
+    additional_wrappers=(wrappers.TimeLimitInjectionWrapper.wrapper_spec(),),
 )

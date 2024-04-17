@@ -2,11 +2,13 @@ import argparse
 import glob
 import os
 
+from fastfiz_env.reward_functions import RewardFunction
+
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Disable Tensorflow warnings
 from typing import Optional
 from stable_baselines3 import PPO
 import fastfiz_env
-from fastfiz_env.reward_functions.default_reward import DefaultReward
+from fastfiz_env.reward_functions import DefaultReward, WinningReward
 from fastfiz_env.wrappers.action import ActionSpaces, FastFizActionWrapper
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import (
@@ -16,7 +18,13 @@ from stable_baselines3.common.callbacks import (
 )
 
 
-def make_env(env_id: str, num_balls: int, max_episode_steps: int, n_envs: int):
+def make_env(
+    env_id: str,
+    num_balls: int,
+    max_episode_steps: int,
+    n_envs: int,
+    reward_function: RewardFunction,
+):
     def make_wrapped_env():
         env = fastfiz_env.make(
             env_id,
@@ -55,9 +63,10 @@ def train(
     total_timesteps=10_000_000,
     logs_path: str = "logs/",
     models_path: str = "models/",
+    reward_function: RewardFunction = DefaultReward,
     callbacks=None,
 ) -> None:
-    env = make_env(env_id, num_balls, max_episode_steps, n_envs)
+    env = make_env(env_id, num_balls, max_episode_steps, n_envs, reward_function)
 
     model_name = get_model_name(env_id, num_balls)
 
@@ -117,7 +126,15 @@ if __name__ == "__main__":
     )
     parser.add_argument("-l", "--logs_path", type=str, default="logs/")
     parser.add_argument("-d", "--models_path", type=str, default="models/")
+    parser.add_argument(
+        "--reward",
+        type=str,
+        choices=["DefaultReward", "WinningReward"],
+        default="DefaultReward",
+    )
     args = parser.parse_args()
+
+    reward_function = DefaultReward if args.reward == "DefaultReward" else WinningReward
 
     env_id = args.env
     num_balls = args.num_balls
@@ -135,7 +152,8 @@ if __name__ == "__main__":
         - total_timesteps: {total_timesteps}\n\
         - model_path: {model_path}\n\
         - logs_path: {logs_path}\n\
-        - models_path: {models_path}"
+        - models_path: {models_path}\n\
+        - reward_function: {args.reward}\n"
     )
 
     train(
@@ -146,4 +164,5 @@ if __name__ == "__main__":
         total_timesteps=total_timesteps,
         logs_path=logs_path,
         models_path=models_path,
+        reward_function=reward_function,
     )

@@ -10,9 +10,9 @@ rewards = [
     ExponentialVelocityReward(NegativeConstantWeight),
 ]
 
-DefaultReward = CombinedReward(reward_functions=rewards, short_circuit=True)
+WinningReward = CombinedReward(reward_functions=rewards, short_circuit=True)
 """
-Default reward function.
+Winning reward function.
 
 Uses the following weighted reward functions:
 - GameWonReward: 1

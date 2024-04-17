@@ -1,6 +1,9 @@
 from gymnasium.envs.registration import EnvSpec
 import gymnasium as gym
+
+from fastfiz_env.wrappers.action import ActionSpaces, FastFizActionWrapper
 from .reward_functions import RewardFunction, DefaultReward
+from stable_baselines3.common.env_util import make_vec_env
 
 
 def make(
@@ -34,3 +37,35 @@ def make(
         disable_env_checker=disable_env_checker,
         **kwargs,
     )
+
+
+def make_wrapped_env(
+    env_id: str, num_balls: int, max_episode_steps: int, reward_function: RewardFunction
+):
+    env = make(
+        env_id,
+        reward_function=reward_function,
+        num_balls=num_balls,
+        max_episode_steps=max_episode_steps,
+        disable_env_checker=False,
+    )
+    env = FastFizActionWrapper(env, action_space_id=ActionSpaces.NO_OFFSET_3D)
+    return env
+
+
+def make_wrapped_vec_env(
+    env_id: str,
+    num_balls: int,
+    max_episode_steps: int,
+    n_envs: int,
+    reward_function: RewardFunction,
+):
+
+    def make_env():
+        return make_wrapped_env(env_id, num_balls, max_episode_steps, reward_function)
+
+    env = make_vec_env(
+        make_env,
+        n_envs=n_envs,
+    )
+    return env

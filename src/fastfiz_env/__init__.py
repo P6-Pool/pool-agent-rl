@@ -27,12 +27,14 @@ model.learn(total_timesteps=10_000)
 
 """
 
-from .make import make
+from .make import make, make_wrapped_vec_env, make_wrapped_env
 from .reward_functions import DefaultReward, RewardFunction, CombinedReward
 from . import envs, utils, wrappers, reward_functions
 
 __all__ = [
     "make",
+    "make_wrapped_vec_env",
+    "make_wrapped_env",
     "DefaultReward",
     "RewardFunction",
     "CombinedReward",

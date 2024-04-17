@@ -7,7 +7,7 @@ rewards = [
     ConstantReward(NegativeConstantWeightMaxSteps),
     BallsNotMovedReward(NegativeConstantWeightMaxSteps),
     StepPocketedReward(ConstantWeightBalls),
-    ExponentialVelocityReward(-1 / 3),
+    ExponentialVelocityReward(NegativeConstantWeight),
 ]
 
 DefaultReward = CombinedReward(reward_functions=rewards, short_circuit=True)
@@ -20,7 +20,7 @@ Uses the following weighted reward functions:
 - ConstantReward: -1 / max_episode_steps
 - BallsNotMovedReward: -1 / max_episode_steps
 - StepPocketedReward: 1 / (num_balls - 1)
-- ExponentialVelocityReward: -1 / 3
+- ExponentialVelocityReward: -1
 
 Returns:
     CombinedReward: The default reward function.

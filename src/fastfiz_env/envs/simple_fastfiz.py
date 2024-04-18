@@ -70,7 +70,7 @@ class SimpleFastFiz(gym.Env):
         """
         Execute an action in the environment.
         """
-
+        self._prev_pocketed = num_balls_pocketed(self.table_state)
         prev_table_state = ff.TableState(self.table_state)
         shot_params = ff.ShotParams(*action)
 

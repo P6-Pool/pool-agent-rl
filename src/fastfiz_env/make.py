@@ -1,3 +1,4 @@
+from typing import Optional
 from gymnasium.envs.registration import EnvSpec
 import gymnasium as gym
 
@@ -39,7 +40,11 @@ def make(
 
 
 def make_wrapped_env(
-    env_id: str, num_balls: int, max_episode_steps: int, reward_function: RewardFunction
+    env_id: str,
+    num_balls: int,
+    max_episode_steps: int,
+    reward_function: RewardFunction,
+    **kwargs,
 ):
     """
     Create an instance of the specified environment with the FastFizActionWrapper.
@@ -50,6 +55,7 @@ def make_wrapped_env(
         num_balls=num_balls,
         max_episode_steps=max_episode_steps,
         disable_env_checker=False,
+        **kwargs,
     )
     env = FastFizActionWrapper(env, action_space_id=ActionSpaces.NO_OFFSET_3D)
     return env
@@ -60,6 +66,7 @@ def make_callable_wrapped_env(
     num_balls: int,
     max_episode_steps: int,
     reward_function: RewardFunction,
+    **kwargs,
 ):
     """
     Create a callable function that returns an instance of the specified environment with the FastFizActionWrapper.
@@ -67,6 +74,8 @@ def make_callable_wrapped_env(
     """
 
     def _init() -> gym.Env:
-        return make_wrapped_env(env_id, num_balls, max_episode_steps, reward_function)
+        return make_wrapped_env(
+            env_id, num_balls, max_episode_steps, reward_function, **kwargs
+        )
 
     return _init

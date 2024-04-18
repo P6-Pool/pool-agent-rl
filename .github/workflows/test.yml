@@ -25,7 +25,8 @@ jobs:
                   cache: 'pip'
             - name: Install dependencies
               run: |
-                  sudo apt-get install python3-opengl
+                  sudo apt update
+                  sudo apt install python3-opengl swig libgsl-dev
                   python -m pip install --upgrade pip
                   pip install ".[test]"
             - name: Test with pytest

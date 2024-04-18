@@ -1,7 +1,7 @@
 import argparse
 import glob
 import os
-from fastfiz_env.make import make_wrapped_vec_env
+from fastfiz_env.make import make_callable_wrapped_env
 from fastfiz_env.reward_functions import RewardFunction
 from typing import Optional
 from stable_baselines3 import PPO
@@ -11,6 +11,7 @@ from stable_baselines3.common.callbacks import (
     EvalCallback,
     CallbackList,
 )
+from stable_baselines3.common.env_util import make_vec_env
 
 
 def get_latest_run_id(log_path: str, name: str) -> int:
@@ -39,8 +40,11 @@ def train(
     reward_function: RewardFunction = DefaultReward,
     callbacks=None,
 ) -> None:
-    env = make_wrapped_vec_env(
-        env_id, num_balls, max_episode_steps, n_envs, reward_function
+    env = make_vec_env(
+        make_callable_wrapped_env(
+            env_id, num_balls, max_episode_steps, reward_function
+        ),
+        n_envs=n_envs,
     )
 
     model_name = get_model_name(env_id, num_balls)

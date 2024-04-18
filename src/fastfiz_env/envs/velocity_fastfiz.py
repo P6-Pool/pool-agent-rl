@@ -36,6 +36,18 @@ class VelocityFastFiz(gym.Env):
         self.table_state = create_table_state(self.num_balls)
         self.observation_space = self._observation_space()
         self.action_space = self._action_space()
+        self.max_episode_steps = None
+
+    def _max_episode_steps(self):
+        if (
+            # hasattr(SimpleFastFiz, "_time_limit_max_episode_steps")
+            self.get_wrapper_attr("_time_limit_max_episode_steps")
+            is not None
+        ):
+            self.max_episode_steps = self.get_wrapper_attr(
+                "_time_limit_max_episode_steps"
+            )
+            self.reward.max_episode_steps = self.max_episode_steps
 
     def reset(
         self, *, seed: Optional[int] = None, options: Optional[dict] = None
@@ -44,6 +56,9 @@ class VelocityFastFiz(gym.Env):
         Reset the environment to its initial state.
         """
         super().reset(seed=seed)
+
+        if self.max_episode_steps is None:
+            self._max_episode_steps()
 
         self.table_state = create_table_state(self.num_balls)
         self.reward.reset(self.table_state)

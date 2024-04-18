@@ -29,7 +29,7 @@ class TestSimpleFastFiz(unittest.TestCase):
         obs, reward, done, truncated, info = env.step(action)
         self.assertEqual(obs.shape, (16, 2))
         self.assertEqual(reward, 1)
-        self.assertEqual(done, True)  # Will terminate as no balls were pocketed
+        self.assertEqual(done, False)
         self.assertEqual(truncated, False)
         self.assertEqual(info, {"is_success": False})
 

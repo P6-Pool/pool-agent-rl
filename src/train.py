@@ -1,43 +1,16 @@
 import argparse
 import glob
 import os
-
+from fastfiz_env.make import make_wrapped_vec_env
 from fastfiz_env.reward_functions import RewardFunction
-
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Disable Tensorflow warnings
 from typing import Optional
 from stable_baselines3 import PPO
-import fastfiz_env
 from fastfiz_env.reward_functions import DefaultReward, WinningReward
-from fastfiz_env.wrappers.action import ActionSpaces, FastFizActionWrapper
-from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import (
     CheckpointCallback,
     EvalCallback,
     CallbackList,
 )
-
-
-def make_env(
-    env_id: str,
-    num_balls: int,
-    max_episode_steps: int,
-    n_envs: int,
-    reward_function: RewardFunction,
-):
-    def make_wrapped_env():
-        env = fastfiz_env.make(
-            env_id,
-            reward_function=DefaultReward,
-            num_balls=num_balls,
-            max_episode_steps=max_episode_steps,
-            disable_env_checker=False,
-        )
-        env = FastFizActionWrapper(env, action_space_id=ActionSpaces.NO_OFFSET_3D)
-        return env
-
-    env = make_vec_env(make_wrapped_env, n_envs=n_envs)
-    return env
 
 
 def get_latest_run_id(log_path: str, name: str) -> int:
@@ -66,7 +39,9 @@ def train(
     reward_function: RewardFunction = DefaultReward,
     callbacks=None,
 ) -> None:
-    env = make_env(env_id, num_balls, max_episode_steps, n_envs, reward_function)
+    env = make_wrapped_vec_env(
+        env_id, num_balls, max_episode_steps, n_envs, reward_function
+    )
 
     model_name = get_model_name(env_id, num_balls)
 
@@ -147,13 +122,13 @@ if __name__ == "__main__":
 
     print(
         f"Starting training on {env_id} with following settings:\n\
-        - num_balls: {num_balls}\n\
-        - max_episode_steps: {max_episode_steps}\n\
-        - total_timesteps: {total_timesteps}\n\
-        - model_path: {model_path}\n\
-        - logs_path: {logs_path}\n\
-        - models_path: {models_path}\n\
-        - reward_function: {args.reward}\n"
+          num_balls: {num_balls}\n\
+          max_episode_steps: {max_episode_steps}\n\
+          total_timesteps: {total_timesteps}\n\
+          model_path: {model_path}\n\
+          logs_path: {logs_path}\n\
+          models_path: {models_path}\n\
+          reward_function: {args.reward}\n"
     )
 
     train(

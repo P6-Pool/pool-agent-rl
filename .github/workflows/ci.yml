@@ -1,12 +1,11 @@
-name: Lint Python package
-
+name: Python package
 on:
     push:
     pull_request:
         branches: ['main']
 
 jobs:
-    lint:
+    build:
         runs-on: ubuntu-latest
         strategy:
             fail-fast: false
@@ -14,7 +13,6 @@ jobs:
                 python-version: ['3.10', '3.11']
         steps:
             - uses: actions/checkout@v4
-            - uses: chartboost/ruff-action@v1
             - name: Set up Python ${{ matrix.python-version }}
               uses: actions/setup-python@v5
               with:
@@ -22,9 +20,20 @@ jobs:
                   cache: 'pip'
             - name: Install dependencies
               run: |
-                  sudo apt-get install python3-opengl
+                  sudo apt update
+                  sudo apt install python3-opengl swig libgsl-dev
                   python -m pip install --upgrade pip
                   pip install ".[test]"
+
+            - name: Lint with Ruff
+              run: |
+                  ruff check src/fastfiz_env
+                  ruff format src/fastfiz_env
+
             - name: Run MyPy
               run: |
                   mypy src/fastfiz_env
+
+            - name: Test with pytest
+              run: |
+                  pytest

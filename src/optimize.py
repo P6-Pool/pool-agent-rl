@@ -7,13 +7,14 @@ import optuna
 import time
 import torch
 import torch.nn as nn
-from fastfiz_env.make import make_wrapped_env, make_wrapped_vec_env
+from fastfiz_env.make import make_callable_wrapped_env
 from fastfiz_env.reward_functions import DefaultReward, WinningReward, RewardFunction
 from optuna.pruners import MedianPruner
 from optuna.samplers import TPESampler
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.env_util import make_vec_env
 from typing import Any, Dict
 
 
@@ -43,16 +44,20 @@ def sample_ppo_params(trial: optuna.Trial) -> Dict[str, Any]:
         "max_grad_norm", [0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 2, 5]
     )
     vf_coef = trial.suggest_float("vf_coef", 0, 1)
-    net_arch_type = trial.suggest_categorical("net_arch", ["tiny", "small", "medium"])
+    net_arch_type = trial.suggest_categorical(
+        "net_arch_type", ["tiny", "small", "medium"]
+    )
     # Uncomment for gSDE (continuous actions)
     # log_std_init = trial.suggest_float("log_std_init", -4, 1)
     # Uncomment for gSDE (continuous action)
     # sde_sample_freq = trial.suggest_categorical("sde_sample_freq", [-1, 8, 16, 32, 64, 128, 256])
     # Orthogonal initialization
-    ortho_init = False
+    ortho_init = trial.suggest_categorical("ortho_init", [False])
     # ortho_init = trial.suggest_categorical('ortho_init', [False, True])
     # activation_fn = trial.suggest_categorical('activation_fn', ['tanh', 'relu', 'elu', 'leaky_relu'])
-    activation_fn_name = trial.suggest_categorical("activation_fn", ["tanh", "relu"])
+    activation_fn_name = trial.suggest_categorical(
+        "activation_fn_name", ["tanh", "relu"]
+    )
     # lr_schedule = "constant"
     # Uncomment to enable learning rate schedule
     # lr_schedule = trial.suggest_categorical('lr_schedule', ['linear', 'constant'])
@@ -65,6 +70,40 @@ def sample_ppo_params(trial: optuna.Trial) -> Dict[str, Any]:
 
     # Independent networks usually work best
     # when not working with images
+    return params_to_kwargs(
+        batch_size=batch_size,
+        n_steps=n_steps,
+        gamma=gamma,
+        learning_rate=learning_rate,
+        ent_coef=ent_coef,
+        clip_range=clip_range,
+        n_epochs=n_epochs,
+        gae_lambda=gae_lambda,
+        max_grad_norm=max_grad_norm,
+        vf_coef=vf_coef,
+        net_arch_type=net_arch_type,
+        ortho_init=ortho_init,
+        activation_fn_name=activation_fn_name,
+    )
+
+
+def params_to_kwargs(
+    *,
+    batch_size,
+    n_steps,
+    gamma,
+    learning_rate,
+    ent_coef,
+    clip_range,
+    n_epochs,
+    gae_lambda,
+    max_grad_norm,
+    vf_coef,
+    net_arch_type,
+    ortho_init,
+    activation_fn_name,
+    **kwargs,
+):
     net_arch = {
         "tiny": dict(pi=[64], vf=[64]),
         "small": dict(pi=[64, 64], vf=[64, 64]),
@@ -90,12 +129,12 @@ def sample_ppo_params(trial: optuna.Trial) -> Dict[str, Any]:
         "max_grad_norm": max_grad_norm,
         "vf_coef": vf_coef,
         # "sde_sample_freq": sde_sample_freq,
-        "policy_kwargs": dict(
+        "policy_kwargs": {
             # log_std_init=log_std_init,
-            net_arch=net_arch,
-            activation_fn=activation_fn,
-            ortho_init=ortho_init,
-        ),
+            "net_arch": net_arch,
+            "activation_fn": activation_fn,
+            "ortho_init": ortho_init,
+        },
     }
 
 
@@ -145,19 +184,23 @@ def objective(
     eval_freq: int,
     n_timesteps: int,
     start_time: str,
+    no_logs: bool,
 ) -> float:
     kwargs = sample_ppo_params(trial)
     N_ENVS = 4
 
-    env = make_wrapped_vec_env(
-        env_id, num_balls, max_episode_steps, N_ENVS, reward_function
+    env = make_vec_env(
+        make_callable_wrapped_env(
+            env_id, num_balls, max_episode_steps, reward_function
+        ),
+        n_envs=N_ENVS,
     )
 
     model = PPO(
         "MlpPolicy",
         env,
         **kwargs,
-        tensorboard_log=f"logs/trials",
+        tensorboard_log="logs/trials" if not no_logs else None,
     )
 
     # Create the callback that will periodically evaluate and report the performance.
@@ -198,13 +241,21 @@ def objective(
 
 
 def save_trial(trial: optuna.trial.FrozenTrial, path: str) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    trial_dict = {
+        "value": trial.value,
+        "params": trial.params,
+        "user_attrs": trial.user_attrs,
+        "kwargs": params_to_kwargs(**trial.params),
+    }
+
+    trial_dict["kwargs"]["policy_kwargs"]["activation_fn"] = trial_dict["params"][
+        "activation_fn_name"
+    ]
+
     with open(path, "w") as fp:
         json.dump(
-            {
-                "value": trial.value,
-                "params": trial.params,
-                "user_attrs": trial.user_attrs,
-            },
+            trial_dict,
             fp,
             indent=4,
         )
@@ -242,8 +293,17 @@ if __name__ == "__main__":
         help="Environment ID",
         required=True,
     )
-    parser.add_argument("--n_jobs", type=int, default=1)
-    parser.add_argument("--max_episode_steps", type=int, default=20)
+    parser.add_argument("--n_jobs", type=int, default=1, help="Number of parallel jobs")
+    parser.add_argument(
+        "--max_episode_steps",
+        type=int,
+        default=20,
+        help="Max episode steps for the environment",
+    )
+    parser.add_argument(
+        "--no-logs", action="store_true", help="Disable Tensorboard logging"
+    )
+
     args = parser.parse_args()
 
     # Set pytorch num threads to 1 for faster training.
@@ -260,17 +320,19 @@ if __name__ == "__main__":
 
     reward_function = DefaultReward if args.reward == "DefaultReward" else WinningReward
 
-    obj_fn = lambda trial: objective(
-        trial,
-        args.env_id,
-        args.num_balls,
-        args.max_episode_steps,
-        reward_function,
-        args.n_eval_episodes,
-        args.eval_freq,
-        args.n_timesteps,
-        start_time,
-    )
+    def obj_fn(trial):
+        return objective(
+            trial,
+            args.env_id,
+            args.num_balls,
+            args.max_episode_steps,
+            reward_function,
+            args.n_eval_episodes,
+            args.eval_freq,
+            args.n_timesteps,
+            start_time,
+            args.no_logs,
+        )
 
     try:
         study.optimize(obj_fn, n_trials=args.n_trials, timeout=3600, n_jobs=args.n_jobs)

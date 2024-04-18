@@ -70,12 +70,12 @@ class CombinedReward(RewardFunction):
             float: The combined, weighted reward.
 
         """
-        total_reward = 0
+        total_reward = 0.0
         for reward_function in self.reward_functions:
             reward = reward_function.get_reward(prev_table_state, table_state, action)
             total_reward += reward
 
-            if issubclass(reward_function.__class__, BinaryReward):
+            if isinstance(reward_function, BinaryReward):
                 if reward == 1 * reward_function.weight() and self.short_circuit and reward_function.short_circuit:
                     return total_reward
 

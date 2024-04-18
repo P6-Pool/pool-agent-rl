@@ -12,7 +12,7 @@ class ImpossibleShotReward(BinaryReward):
         self,
         prev_table_state: ff.TableState,
         table_state: ff.TableState,
-        action: np.ndarray,
+        action: np.ndarray[float, np.dtype[np.float32]],
     ) -> float:
         """
         Reward function returns 1 if the shot is impossible, 0 otherwise.

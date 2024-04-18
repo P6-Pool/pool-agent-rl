@@ -23,6 +23,8 @@ __all__ = [
     "shotparams_to_list",
     "shotparams_to_string",
     "table_state_to_string",
+    "ball_state_to_pocket",
+    "get_pocket_center",
     "POCKETS",
     "GameBall",
 ]
@@ -53,6 +55,8 @@ from .fastfiz import (
     shotparams_to_list,
     shotparams_to_string,
     table_state_to_string,
+    ball_state_to_pocket,
+    get_pocket_center,
     POCKETS,
 )
 

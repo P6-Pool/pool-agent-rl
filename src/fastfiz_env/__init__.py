@@ -3,8 +3,9 @@ Gymnasium environments for pool, using FastFiz to simulate the physics of the ga
 
 Avaliable environments:
     - `SimpleFastFiz-v0`: Observes the position of the balls.
-    - `VelocityFastFiz-v0`: Observes the velocity of the balls.
     - `TestingFastFiz-v0`: Observes the position of the balls. Used for testing purposes with options e.g. seed, logging, action_space_id.
+    - `FramesFastFiz-v0`: Observes the position of the balls and the frames of the simulation.
+    - `PocketsFastFiz-v0`: Observes the position of the balls and in play state. Pocketed balls position always corresponds to given pocket center.
 
 
 ### Example
@@ -27,12 +28,14 @@ model.learn(total_timesteps=10_000)
 
 """
 
-from .make import make
+from .make import make, make_wrapped_vec_env, make_wrapped_env
 from .reward_functions import DefaultReward, RewardFunction, CombinedReward
 from . import envs, utils, wrappers, reward_functions
 
 __all__ = [
     "make",
+    "make_wrapped_vec_env",
+    "make_wrapped_env",
     "DefaultReward",
     "RewardFunction",
     "CombinedReward",
@@ -46,20 +49,26 @@ from gymnasium.envs.registration import register
 
 
 register(
-    id="VelocityFastFiz-v0",
-    entry_point="fastfiz_env.envs:VelocityFastFiz",
-    additional_wrappers=(wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),),
-)
-
-register(
     id="SimpleFastFiz-v0",
     entry_point="fastfiz_env.envs:SimpleFastFiz",
-    additional_wrappers=(wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),),
+    additional_wrappers=(wrappers.TimeLimitInjectionWrapper.wrapper_spec(),),
 )
 
 
 register(
     id="TestingFastFiz-v0",
     entry_point="fastfiz_env.envs:TestingFastFiz",
-    additional_wrappers=(wrappers.MaxEpisodeStepsInjectionWrapper.wrapper_spec(),),
+    additional_wrappers=(wrappers.TimeLimitInjectionWrapper.wrapper_spec(),),
+)
+
+register(
+    id="FramesFastFiz-v0",
+    entry_point="fastfiz_env.envs:FramesFastFiz",
+    additional_wrappers=(wrappers.TimeLimitInjectionWrapper.wrapper_spec(),),
+)
+
+register(
+    id="PocketsFastFiz-v0",
+    entry_point="fastfiz_env.envs:PocketsFastFiz",
+    additional_wrappers=(wrappers.TimeLimitInjectionWrapper.wrapper_spec(),),
 )

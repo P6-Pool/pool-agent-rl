@@ -6,3 +6,4 @@ stable-baselines3==2.2.1
 tensorboard==2.16.2
 tensorflow==2.16.1
 vectormath==0.2.2
+optuna==3.6.1

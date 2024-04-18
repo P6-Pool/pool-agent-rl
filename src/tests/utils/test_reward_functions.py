@@ -2,17 +2,23 @@ import unittest
 import fastfiz as ff
 from fastfiz_env.reward_functions.common import *
 from fastfiz_env.reward_functions import CombinedReward
+from fastfiz_env.reward_functions.reward_function import Weight
 from fastfiz_env.utils.fastfiz import create_table_state
+import numpy as np
 
 
-def weight_fn(num_balls: int, current_step: int, max_steps: int) -> float:
+def weight_fn(num_balls: int, current_step: int, max_steps: int | None) -> float:
+    if max_steps is None:
+        max_steps = 0
     return num_balls + current_step + max_steps
 
 
 class TestRewardFunctions(unittest.TestCase):
-    possible_shot_action = [0, 0, ff.TableState.MAX_THETA - 0.001, 0, 0]
-    impossible_shot_action = [0, 0, 0, 0, 0]
-    empty_action = []
+    possible_shot_action = np.array(
+        [0, 0, ff.TableState.MAX_THETA - 0.001, 0, 0], dtype=np.float64
+    )
+    impossible_shot_action = np.array([0, 0, 0, 0, 0], dtype=np.float64)
+    empty_action = np.array([], dtype=np.float64)
 
     def test_step_pocketed_reward(self):
         table_state = create_table_state(2)

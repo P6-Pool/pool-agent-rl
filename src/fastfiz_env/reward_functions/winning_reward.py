@@ -2,25 +2,26 @@ from .combined_reward import CombinedReward
 from .common import *
 
 rewards = [
-    ImpossibleShotReward(NegativeConstantWeightMaxSteps),
+    GameWonReward(ConstantWeight),
     CueBallPocketedReward(NegativeConstantWeight),
+    StepNoBallsPocketedReward(NegativeConstantWeight),
     ConstantReward(NegativeConstantWeightMaxSteps),
-    StepPocketedReward(ConstantWeight),
+    StepPocketedReward(ConstantWeightBalls),
     ExponentialVelocityReward(NegativeConstantWeight),
 ]
-
 
 WinningReward = CombinedReward(reward_functions=rewards, short_circuit=True)
 """
 Winning reward function.
 
 Uses the following weighted reward functions:
-- ImpossibleShotReward: -1 / max_episode_steps
+- GameWonReward: 1
 - CueBallPocketedReward: -1
+- StepNoBallsPocketedReward: -1
 - ConstantReward: -1 / max_episode_steps
-- StepPocketedReward: 1
+- StepPocketedReward: 1 / (num_balls - 1)
 - ExponentialVelocityReward: -1
 
 Returns:
-    CombinedReward: The reward function.
+    CombinedReward: The default reward function.
 """

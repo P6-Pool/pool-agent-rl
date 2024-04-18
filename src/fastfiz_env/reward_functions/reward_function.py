@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 import fastfiz as ff
-from typing import Union, Callable, Optional
+from typing import Union, Callable, Optional, TypeAlias
 import numpy as np
 from fastfiz_env.utils.fastfiz.fastfiz import num_balls_in_play
 
 
-Weight = Union[float, Callable[[int, int, Optional[int]], float]]
+Weight: TypeAlias = Union[float, Callable[[int, int, Optional[int]], float]]
 """
 Type alias for a weight value or a callable that calculates the weight of a reward function.
 
@@ -25,7 +25,12 @@ class RewardFunction(ABC):
     Abstract base class for reward functions.
     """
 
-    def __init__(self, weight: Weight = 1, *, max_episode_steps: int = None) -> None:
+    def __init__(
+        self,
+        weight: Union[Weight, float] = 1,
+        *,
+        max_episode_steps: Optional[int] = None,
+    ) -> None:
         """
         Initializes the reward function.
 
@@ -37,6 +42,10 @@ class RewardFunction(ABC):
         super().__init__()
         self.__reset_called = False
         self.__weight = weight
+        # if max_episode_steps is None:
+        #     raise ValueError(
+        #         "max_episode_steps must be provided when instantiating a RewardFunction. Try using MaxEpisodeStepsInjectionWrapper with your environment."
+        #     )
         self.max_episode_steps = max_episode_steps
         self.current_step = 0
         self.num_balls = 0
@@ -59,7 +68,7 @@ class RewardFunction(ABC):
         self,
         prev_table_state: ff.TableState,
         table_state: ff.TableState,
-        action: np.ndarray,
+        action: np.ndarray[float, np.dtype[Union[np.float32, np.float64]]],
     ) -> float:
         """
         Calculates the weigthed reward for a given table state transition.

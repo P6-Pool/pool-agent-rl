@@ -5,11 +5,11 @@ from gymnasium import spaces
 
 POCKETS = [
     ff.Table.SW,
-    ff.Table.SE,
     ff.Table.W,
-    ff.Table.E,
     ff.Table.NW,
     ff.Table.NE,
+    ff.Table.E,
+    ff.Table.SE,
 ]
 """
 List of pocket positions.
@@ -109,6 +109,31 @@ def pocket_centers(table_state: ff.TableState) -> np.ndarray:
         pocket_positions.append((pocket_center.x, pocket_center.y))
 
     return np.array(pocket_positions)
+
+
+def ball_state_to_pocket(ball_state: int) -> int:
+    # 5: SW
+    # 6: W
+    # 7: NW
+    # 8: NE
+    # 9: E
+    # 10: SE
+    return POCKETS[ball_state - 5]
+
+
+def get_pocket_center(pocket: int) -> np.ndarray:
+    """
+    Get the center of the specified pocket.
+
+    Args:
+        pocket (int): The pocket index.
+
+    Returns:
+        np.ndarray: The x and y coordinates of the pocket center.
+    """
+    table: ff.Table = ff.Table()
+    pocket_center = table.getPocketCenter(pocket)
+    return np.array([pocket_center.x, pocket_center.y])
 
 
 def distance_to_pocket(ball_position: np.ndarray, pocket: np.ndarray) -> float:
@@ -345,7 +370,9 @@ def action_to_shot(action: np.ndarray, action_space: spaces.Box) -> ff.ShotParam
     return ff.ShotParams(a, b, theta, phi, velocity)
 
 
-def normalize_ball_positions(ball_positions: np.ndarray) -> np.ndarray:
+def normalize_ball_positions(
+    ball_positions: np.ndarray[float, np.dtype[np.float32]]
+) -> np.ndarray[float, np.dtype[np.float32]]:
     """
     Normalize the ball positions to be within the range [0, 1].
 
@@ -355,8 +382,8 @@ def normalize_ball_positions(ball_positions: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: The normalized ball positions.
     """
-    width = ff.Table.TABLE_WIDTH
-    length = ff.Table.TABLE_LENGTH
+    width: float = ff.Table.TABLE_WIDTH
+    length: float = ff.Table.TABLE_LENGTH
 
     return ball_positions / np.array([width, length])
 

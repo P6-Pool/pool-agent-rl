@@ -13,6 +13,7 @@ from .constant_reward import ConstantReward
 from .balls_not_moved_reward import BallsNotMovedReward
 from .velocity_reward import VelocityReward
 from .exponential_velocity_reward import ExponentialVelocityReward
+from .step_no_balls_pocketed_reward import StepNoBallsPocketedReward
 
 from .weights import (
     ConstantWeight,
@@ -41,6 +42,7 @@ __all__ = [
     "BallsNotMovedReward",
     "VelocityReward",
     "ExponentialVelocityReward",
+    "StepNoBallsPocketedReward",
     # Weights
     "ConstantWeight",
     "NegativeConstantWeight",

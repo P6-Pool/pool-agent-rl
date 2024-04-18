@@ -53,7 +53,6 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
-
 # Sphinx documentation
 docs/_build/
 
@@ -96,8 +95,7 @@ ENV/
 env.bak/
 venv.bak/
 
-
 # # # #
 
-logs/*
-models/*
+*logs*/*
+*models*/*

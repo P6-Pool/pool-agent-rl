@@ -4,19 +4,21 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 
-from fastfiz_env.utils.fastfiz.fastfiz import num_balls_in_play, num_balls_pocketed
-
 from ..utils.fastfiz import (
     create_random_table_state,
     get_ball_positions,
     normalize_ball_positions,
+    pocket_centers,
+    ball_state_to_pocket,
+    get_pocket_center,
+    num_balls_pocketed,
 )
 from .utils import game_won, terminal_state, possible_shot
 from typing import Optional
 from ..reward_functions import RewardFunction, DefaultReward
 
 
-class SimpleFastFiz(gym.Env):
+class PocketsFastFiz(gym.Env):
     """FastFiz environment for using different action spaces."""
 
     TOTAL_BALLS = 16
@@ -61,6 +63,10 @@ class SimpleFastFiz(gym.Env):
         self.reward.reset(self.table_state)
         self._prev_pocketed = 0
 
+        self._pocket_centers = normalize_ball_positions(
+            pocket_centers(self.table_state)
+        )
+
         observation = self._get_observation()
         info = self._get_info()
 
@@ -85,18 +91,29 @@ class SimpleFastFiz(gym.Env):
 
         return observation, reward, terminated, truncated, info
 
+    def _get_observation(self):
+        return self.compute_observation(self.table_state)
+
     @classmethod
     def compute_observation(cls, table_state: ff.TableState) -> np.ndarray:
         ball_positions = get_ball_positions(table_state)[: cls.TOTAL_BALLS]
         ball_positions = normalize_ball_positions(ball_positions) * 2 - 1
-        observation = np.zeros((cls.TOTAL_BALLS, 2), dtype=np.float32)
+        observation = np.zeros((cls.TOTAL_BALLS, 3), dtype=np.float32)
         for i, ball_pos in enumerate(ball_positions):
-            observation[i] = [*ball_pos]
+            ball = table_state.getBall(i)
+            if ball.isPocketed():
+                pocket = ball_state_to_pocket(ball.getState())
+                pocket_pos = get_pocket_center(pocket)
+                observation[i] = [*pocket_pos, 0]
+            elif ball.isInPlay():
+                observation[i] = [*ball_pos, 1]
+            else:
+                observation[i] = [0, 0, 0]
+
+        # for i, pocket_center in enumerate(self._pocket_centers):
+        #     observation[self.TOTAL_BALLS + i] = pocket_center
 
         return np.array(observation)
-
-    def _get_observation(self):
-        return self.compute_observation(self.table_state)
 
     def _observation_space(self) -> spaces.Box:
         """
@@ -108,8 +125,8 @@ class SimpleFastFiz(gym.Env):
 
         All values are in the range `[-1, 1]`.
         """
-        lower = np.full((self.TOTAL_BALLS, 2), [-1, -1])
-        upper = np.full((self.TOTAL_BALLS, 2), [1, 1])
+        lower = np.full((self.TOTAL_BALLS, 3), [-1, -1, 0])
+        upper = np.full((self.TOTAL_BALLS, 3), [1, 1, 1])
         return spaces.Box(low=lower, high=upper, dtype=np.float32)
 
     def _action_space(self) -> spaces.Box:

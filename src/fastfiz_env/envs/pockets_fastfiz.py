@@ -54,9 +54,7 @@ class PocketsFastFiz(gym.Env):
 
         self.reward.max_episode_steps = self.max_episode_steps
 
-    def reset(
-        self, *, seed: Optional[int] = None, options: Optional[dict] = None
-    ) -> tuple[np.ndarray, dict]:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> tuple[np.ndarray, dict]:
         super().reset(seed=seed)
 
         if self.max_episode_steps is None or self.elapsed_steps is None:
@@ -66,9 +64,7 @@ class PocketsFastFiz(gym.Env):
         self.reward.reset(self.table_state)
         self._prev_pocketed = 0
 
-        self._pocket_centers = normalize_ball_positions(
-            pocket_centers(self.table_state)
-        )
+        self._pocket_centers = normalize_ball_positions(pocket_centers(self.table_state))
 
         observation = self._get_observation()
         info = self._get_info()

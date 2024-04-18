@@ -75,14 +75,12 @@ class CombinedReward(RewardFunction):
             total_reward += reward
 
             if issubclass(reward_function.__class__, BinaryReward):
-                if (
-                    reward == 1 * reward_function.weight()
-                    and self.short_circuit
-                    and reward_function.short_circuit
-                ):
+                if reward == 1 * reward_function.weight() and self.short_circuit and reward_function.short_circuit:
                     return total_reward
 
         return total_reward
 
     def __str__(self) -> str:
-        return f"CombinedReward({[str(reward) for reward in self.reward_functions]}, {None}, short_circuit={self.short_circuit})"
+        return (
+            f"CombinedReward({[str(reward) for reward in self.reward_functions]}, {None}, short_circuit={self.short_circuit})"
+        )

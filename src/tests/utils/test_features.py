@@ -4,7 +4,6 @@ import numpy as np
 
 
 class TestFeatures(unittest.TestCase):
-
     def test_deg_to_vec(self):
         self.assertTrue(np.allclose(deg_to_vec(0), [1, 0]))
         self.assertTrue(np.allclose(deg_to_vec(90), [0, 1]))

@@ -28,26 +28,16 @@ def sample_ppo_params(trial: optuna.Trial) -> Dict[str, Any]:
     :return:
     """
     batch_size = trial.suggest_categorical("batch_size", [8, 16, 32, 64, 128, 256, 512])
-    n_steps = trial.suggest_categorical(
-        "n_steps", [8, 16, 32, 64, 128, 256, 512, 1024, 2048]
-    )
-    gamma = trial.suggest_categorical(
-        "gamma", [0.9, 0.95, 0.98, 0.99, 0.995, 0.999, 0.9999]
-    )
+    n_steps = trial.suggest_categorical("n_steps", [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
+    gamma = trial.suggest_categorical("gamma", [0.9, 0.95, 0.98, 0.99, 0.995, 0.999, 0.9999])
     learning_rate = trial.suggest_float("learning_rate", 1e-5, 1, log=True)
     ent_coef = trial.suggest_float("ent_coef", 0.00000001, 0.1, log=True)
     clip_range = trial.suggest_categorical("clip_range", [0.1, 0.2, 0.3, 0.4])
     n_epochs = trial.suggest_categorical("n_epochs", [1, 5, 10, 20])
-    gae_lambda = trial.suggest_categorical(
-        "gae_lambda", [0.8, 0.9, 0.92, 0.95, 0.98, 0.99, 1.0]
-    )
-    max_grad_norm = trial.suggest_categorical(
-        "max_grad_norm", [0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 2, 5]
-    )
+    gae_lambda = trial.suggest_categorical("gae_lambda", [0.8, 0.9, 0.92, 0.95, 0.98, 0.99, 1.0])
+    max_grad_norm = trial.suggest_categorical("max_grad_norm", [0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 2, 5])
     vf_coef = trial.suggest_float("vf_coef", 0, 1)
-    net_arch_type = trial.suggest_categorical(
-        "net_arch_type", ["tiny", "small", "medium"]
-    )
+    net_arch_type = trial.suggest_categorical("net_arch_type", ["tiny", "small", "medium"])
     # Uncomment for gSDE (continuous actions)
     # log_std_init = trial.suggest_float("log_std_init", -4, 1)
     # Uncomment for gSDE (continuous action)
@@ -56,9 +46,7 @@ def sample_ppo_params(trial: optuna.Trial) -> Dict[str, Any]:
     ortho_init = trial.suggest_categorical("ortho_init", [False])
     # ortho_init = trial.suggest_categorical('ortho_init', [False, True])
     # activation_fn = trial.suggest_categorical('activation_fn', ['tanh', 'relu', 'elu', 'leaky_relu'])
-    activation_fn_name = trial.suggest_categorical(
-        "activation_fn_name", ["tanh", "relu"]
-    )
+    activation_fn_name = trial.suggest_categorical("activation_fn_name", ["tanh", "relu"])
     # lr_schedule = "constant"
     # Uncomment to enable learning rate schedule
     # lr_schedule = trial.suggest_categorical('lr_schedule', ['linear', 'constant'])
@@ -141,9 +129,7 @@ def objective(
     N_ENVS = 4
 
     env = make_vec_env(
-        make_callable_wrapped_env(
-            env_id, num_balls, max_episode_steps, reward_function, **env_kwargs
-        ),
+        make_callable_wrapped_env(env_id, num_balls, max_episode_steps, reward_function, **env_kwargs),
         n_envs=N_ENVS,
     )
 
@@ -232,9 +218,7 @@ class StoreDict(argparse.Action):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Description of your program")
     parser.add_argument("--n_trials", type=int, default=20, help="Number of trials")
-    parser.add_argument(
-        "--n_startup_trials", type=int, default=5, help="Number of startup trials"
-    )
+    parser.add_argument("--n_startup_trials", type=int, default=5, help="Number of startup trials")
     parser.add_argument(
         "--reward",
         type=str,
@@ -242,18 +226,10 @@ if __name__ == "__main__":
         default="DefaultReward",
         help="Reward function",
     )
-    parser.add_argument(
-        "--n_timesteps", type=int, default=int(5e5), help="Number of timesteps"
-    )
-    parser.add_argument(
-        "--num-balls", type=int, default=2, help="Number of balls in the environment"
-    )
-    parser.add_argument(
-        "--eval_freq", type=int, default=10_000, help="Evaluation frequency"
-    )
-    parser.add_argument(
-        "--n_eval_episodes", type=int, default=100, help="Number of evaluation episodes"
-    )
+    parser.add_argument("--n_timesteps", type=int, default=int(5e5), help="Number of timesteps")
+    parser.add_argument("--num-balls", type=int, default=2, help="Number of balls in the environment")
+    parser.add_argument("--eval_freq", type=int, default=10_000, help="Evaluation frequency")
+    parser.add_argument("--n_eval_episodes", type=int, default=100, help="Number of evaluation episodes")
     parser.add_argument(
         "--env_id",
         type=str,
@@ -268,9 +244,7 @@ if __name__ == "__main__":
         default=20,
         help="Max episode steps for the environment",
     )
-    parser.add_argument(
-        "--no-logs", action="store_true", help="Disable Tensorboard logging"
-    )
+    parser.add_argument("--no-logs", action="store_true", help="Disable Tensorboard logging")
 
     parser.add_argument(
         "--env-options",

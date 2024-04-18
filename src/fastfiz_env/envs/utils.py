@@ -26,6 +26,4 @@ def possible_shot(table_state: ff.TableState, shot_params: ff.ShotParams) -> boo
     """
     Check if the shot is possible.
     """
-    return (
-        table_state.isPhysicallyPossible(shot_params) == ff.TableState.OK_PRECONDITION
-    )
+    return table_state.isPhysicallyPossible(shot_params) == ff.TableState.OK_PRECONDITION

@@ -81,9 +81,7 @@ class RewardFunction(ABC):
             float: The calculated reward value.
         """
         if not self.__reset_called:
-            raise RuntimeError(
-                f"{self.__class__.__name__} reset() method must be called before calling get_reward()."
-            )
+            raise RuntimeError(f"{self.__class__.__name__} reset() method must be called before calling get_reward().")
         self.current_step += 1
         return self.reward(prev_table_state, table_state, action) * self.weight()
 
@@ -115,9 +113,7 @@ class RewardFunction(ABC):
             float: The weight of the reward function.
         """
         if callable(self.__weight):
-            return self.__weight(
-                self.num_balls, self.current_step, self.max_episode_steps
-            )
+            return self.__weight(self.num_balls, self.current_step, self.max_episode_steps)
         return self.__weight
 
     def __str__(self):

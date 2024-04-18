@@ -85,13 +85,9 @@ class Agent:
         for _ in range(10):
             if isinstance(self.env, FramesFastFiz):
                 if self.prev_ts is None:
-                    obs = self.env.compute_observation(
-                        table_state, table_state, self.shot
-                    )
+                    obs = self.env.compute_observation(table_state, table_state, self.shot)
                 else:
-                    obs = self.env.compute_observation(
-                        self.prev_ts, table_state, self.shot
-                    )
+                    obs = self.env.compute_observation(self.prev_ts, table_state, self.shot)
             elif isinstance(self.env, PocketsFastFiz):
                 obs = self.env.compute_observation(table_state)
             else:
@@ -114,9 +110,7 @@ def main() -> None:
     parser.add_argument("-m", "--model", type=str, help="Path to the model file")
     args = parser.parse_args()
 
-    assert args.model is not None and os.path.exists(
-        args.model
-    ), f"Model file not found: {args.model}"
+    assert args.model is not None and os.path.exists(args.model), f"Model file not found: {args.model}"
 
     model = PPO.load(args.model)
 

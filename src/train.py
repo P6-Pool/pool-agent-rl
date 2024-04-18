@@ -44,9 +44,7 @@ def train(
     params: Optional[dict] = None,
 ) -> None:
     env = make_vec_env(
-        make_callable_wrapped_env(
-            env_id, num_balls, max_episode_steps, reward_function
-        ),
+        make_callable_wrapped_env(env_id, num_balls, max_episode_steps, reward_function),
         n_envs=n_envs,
     )
 
@@ -55,9 +53,7 @@ def train(
     model_name = get_model_name(env_id, num_balls)
 
     if model_dir is None:
-        model = PPO(
-            "MlpPolicy", env, verbose=1, tensorboard_log=logs_path, **hyperparams
-        )
+        model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=logs_path, **hyperparams)
     else:
         model = PPO.load(model_dir, env=env, verbose=1, tensorboard_log=logs_path)
         pretrained_name = model_dir.split("/")[-1].rsplit(".zip", 1)[0]
@@ -145,9 +141,7 @@ if __name__ == "__main__":
         assert os.path.exists(logs_path), f"params path does not exist: {logs_path}"
         with open(params_path, "r") as fp:
             params = json.load(fp)
-        assert (
-            "params" in params
-        ), "params file must have key 'params' with dict of hyperparameters"
+        assert "params" in params, "params file must have key 'params' with dict of hyperparameters"
         params = params["params"]
 
     print(

@@ -74,8 +74,6 @@ def make_callable_wrapped_env(
     """
 
     def _init() -> gym.Env:
-        return make_wrapped_env(
-            env_id, num_balls, max_episode_steps, reward_function, **kwargs
-        )
+        return make_wrapped_env(env_id, num_balls, max_episode_steps, reward_function, **kwargs)
 
     return _init

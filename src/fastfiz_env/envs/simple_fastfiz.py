@@ -52,9 +52,7 @@ class SimpleFastFiz(gym.Env):
 
         self.reward.max_episode_steps = self.max_episode_steps
 
-    def reset(
-        self, *, seed: Optional[int] = None, options: Optional[dict] = None
-    ) -> tuple[np.ndarray, dict]:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> tuple[np.ndarray, dict]:
         super().reset(seed=seed)
 
         if self.max_episode_steps is None or self.elapsed_steps is None:

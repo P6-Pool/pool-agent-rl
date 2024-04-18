@@ -116,18 +116,20 @@ class FastFizActionWrapper(ActionWrapper):
         self.action_space = self.SPACES[action_space_id.name]
 
     def action(self, action: np.ndarray[float, np.dtype[np.float32]]) -> np.ndarray[float, np.dtype[np.float32]]:
-        offset_a = 0
-        offset_b = 0
+        offset_a = 0.0
+        offset_b = 0.0
 
         match self.action_space_id:
             case ActionSpaces.VECTOR_2D:
-                theta = 20
+                theta = 20.0
                 phi = float(np.degrees(np.arctan2(action[1], action[0])) % self.MAX_PHI)
-                offset_b = 11
-                velocity = np.interp(
-                    np.hypot(*action),
-                    (0, np.sqrt(2)),
-                    (self.MIN_VELOCITY, self.MAX_VELOCITY - 5),
+                offset_b = 11.0
+                velocity = float(
+                    np.interp(
+                        np.hypot(*action),
+                        (0, np.sqrt(2)),
+                        (self.MIN_VELOCITY, self.MAX_VELOCITY - 5),
+                    )
                 )
             case ActionSpaces.VECTOR_3D:
                 x, y, z = action
@@ -135,23 +137,21 @@ class FastFizActionWrapper(ActionWrapper):
                 phi, theta, r = sph2deg(az, el, r)
                 theta = float(np.interp(theta, (0, np.rad2deg(np.pi)), (self.MIN_THETA, self.MAX_THETA)))
                 phi = float(np.interp(phi, (0, np.rad2deg(2 * np.pi)), (self.MIN_PHI, self.MAX_PHI)))
-                velocity = np.interp(r, (0, np.sqrt(3)), (self.MIN_VELOCITY, self.MAX_VELOCITY))
+                velocity = float(np.interp(r, (0, np.sqrt(3)), (self.MIN_VELOCITY, self.MAX_VELOCITY)))
             case ActionSpaces.NORM_3D:
-                theta = np.interp(action[0], (-1, 1), (self.MIN_THETA, self.MAX_THETA))
-                phi = np.interp(action[1], (-1, 1), (self.MIN_PHI, self.MAX_PHI))
-                velocity = np.interp(action[2], (-1, 1), (self.MIN_VELOCITY, self.MAX_VELOCITY))
+                theta = float(np.interp(action[0], (-1, 1), (self.MIN_THETA, self.MAX_THETA)))
+                phi = float(np.interp(action[1], (-1, 1), (self.MIN_PHI, self.MAX_PHI)))
+                velocity = float(np.interp(action[2], (-1, 1), (self.MIN_VELOCITY, self.MAX_VELOCITY)))
             case ActionSpaces.NORM_5D:
-                theta = np.interp(action[2], (-1, 1), (self.MIN_THETA, self.MAX_THETA))
-                phi = np.interp(action[3], (-1, 1), (self.MIN_PHI, self.MAX_PHI))
-                velocity = np.interp(action[4], (-1, 1), (self.MIN_VELOCITY, self.MAX_VELOCITY))
+                theta = float(np.interp(action[2], (-1, 1), (self.MIN_THETA, self.MAX_THETA)))
+                phi = float(np.interp(action[3], (-1, 1), (self.MIN_PHI, self.MAX_PHI)))
+                velocity = float(np.interp(action[4], (-1, 1), (self.MIN_VELOCITY, self.MAX_VELOCITY)))
             case ActionSpaces.OFFSET_NORM_5D:
-                offset_a = np.interp(action[0], (-1, 1), (self.MIN_OFFSET, self.MAX_OFFSET))
-                offset_b = np.interp(action[1], (-1, 1), (self.MIN_OFFSET, self.MAX_OFFSET))
-                theta = np.interp(action[2], (-1, 1), (self.MIN_THETA, self.MAX_THETA))
-                phi = np.interp(action[3], (-1, 1), (self.MIN_PHI, self.MAX_PHI))
-                velocity = np.interp(action[4], (-1, 1), (self.MIN_VELOCITY, self.MAX_VELOCITY))
-
-                velocity = np.interp(action[4], (-1, 1), (self.MIN_VELOCITY, self.MAX_VELOCITY))
+                offset_a = float(np.interp(action[0], (-1, 1), (self.MIN_OFFSET, self.MAX_OFFSET)))
+                offset_b = float(np.interp(action[1], (-1, 1), (self.MIN_OFFSET, self.MAX_OFFSET)))
+                theta = float(np.interp(action[2], (-1, 1), (self.MIN_THETA, self.MAX_THETA)))
+                phi = float(np.interp(action[3], (-1, 1), (self.MIN_PHI, self.MAX_PHI)))
+                velocity = float(np.interp(action[4], (-1, 1), (self.MIN_VELOCITY, self.MAX_VELOCITY)))
 
         action = np.array([offset_a, offset_b, theta, phi, velocity])
         return action

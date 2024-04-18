@@ -1,4 +1,4 @@
-from .utils import vec_to_abs_deg, cart2sph, sph2deg
+from .utils import cart2sph, sph2deg
 from gymnasium import ActionWrapper
 from gymnasium import spaces
 import numpy as np

@@ -1,42 +1,6 @@
 import numpy as np
 
 
-def deg_to_vec(deg: float) -> np.ndarray:
-    """
-    Gets the vector of an angle.
-    """
-    rad = np.deg2rad(deg)
-    return np.array([np.cos(rad), np.sin(rad)], dtype=np.float32)
-
-
-def vec_to_deg(vec: np.ndarray) -> float:
-    """
-    Gets the angle of a vector.
-    """
-    return float(np.rad2deg(np.arctan2(vec[1], vec[0])))
-
-
-def vec_to_abs_deg(vec: np.ndarray) -> float:
-    """
-    Gets the absolute angle of a vector.
-    """
-    return vec_to_deg(vec) % 360
-
-
-def vec_mag(vec: np.ndarray) -> float:
-    """
-    Gets the length of a vector.
-    """
-    return float(np.linalg.norm(vec))
-
-
-def vec_norm(vec: np.ndarray) -> np.ndarray:
-    """
-    Gets the unit vector of a vector.
-    """
-    return vec / vec_mag(vec)
-
-
 def cart2sph(x: float, y: float, z: float) -> tuple[float, float, float]:
     """
     Convert Cartesian coordinates to spherical coordinates.

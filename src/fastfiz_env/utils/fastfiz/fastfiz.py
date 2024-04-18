@@ -44,7 +44,13 @@ def num_balls_in_play(table_state: ff.TableState) -> int:
     Returns:
         int: The number of balls in play.
     """
-    return len([i for i in range(table_state.getNumBalls()) if table_state.getBall(i).isInPlay()])
+    return len(
+        [
+            i
+            for i in range(table_state.getNumBalls())
+            if table_state.getBall(i).isInPlay()
+        ]
+    )
 
 
 def num_balls_pocketed(
@@ -65,10 +71,14 @@ def num_balls_pocketed(
         int: The number of balls pocketed.
     """
     stop = table_state.getNumBalls() if range_stop is None else range_stop
-    return len([i for i in range(range_start, stop) if table_state.getBall(i).isPocketed()])
+    return len(
+        [i for i in range(range_start, stop) if table_state.getBall(i).isPocketed()]
+    )
 
 
-def any_ball_has_moved(prev_ball_positions: np.ndarray, ball_positions: np.ndarray) -> bool:
+def any_ball_has_moved(
+    prev_ball_positions: np.ndarray, ball_positions: np.ndarray
+) -> bool:
     """
     Check if any ball has moved by comparing the previous ball positions with the current ball positions.
 
@@ -166,7 +176,9 @@ def distance_to_closest_pocket(ball_position: np.ndarray, pockets: np.ndarray) -
     return np.min(distance_to_pockets(ball_position, pockets))
 
 
-def distances_to_closest_pocket(ball_positions: np.ndarray, pockets: np.ndarray) -> np.ndarray:
+def distances_to_closest_pocket(
+    ball_positions: np.ndarray, pockets: np.ndarray
+) -> np.ndarray:
     """
     Calculates the distances from each ball position to the closest pocket.
 
@@ -177,7 +189,12 @@ def distances_to_closest_pocket(ball_positions: np.ndarray, pockets: np.ndarray)
     Returns:
         np.ndarray: An array of distances from each ball position to the closest pocket.
     """
-    return np.array([distance_to_closest_pocket(ball_position, pockets) for ball_position in ball_positions])
+    return np.array(
+        [
+            distance_to_closest_pocket(ball_position, pockets)
+            for ball_position in ball_positions
+        ]
+    )
 
 
 def create_table_state(n_balls: int) -> ff.TableState:
@@ -206,7 +223,9 @@ def create_table_state(n_balls: int) -> ff.TableState:
     return table_state
 
 
-def create_random_table_state(n_balls: int, seed: Optional[int] = None) -> ff.TableState:
+def create_random_table_state(
+    n_balls: int, seed: Optional[int] = None
+) -> ff.TableState:
     """
     Creates a random table state with the specified number of balls.
 
@@ -222,7 +241,9 @@ def create_random_table_state(n_balls: int, seed: Optional[int] = None) -> ff.Ta
     return table_state
 
 
-def randomize_table_state(table_state: ff.TableState, seed: Optional[int] = None) -> None:
+def randomize_table_state(
+    table_state: ff.TableState, seed: Optional[int] = None
+) -> ff.TableState:
     """
     Randomizes the positions of the balls on the pool table within the given table state.
 
@@ -276,7 +297,9 @@ def randomize_table_state(table_state: ff.TableState, seed: Optional[int] = None
     return table_state
 
 
-def map_action_to_shot_params(table_state: ff.TableState, action: np.ndarray) -> np.ndarray:
+def map_action_to_shot_params(
+    table_state: ff.TableState, action: np.ndarray
+) -> np.ndarray:
     """
     Maps the given action values to the corresponding shot parameters within the specified ranges.
 
@@ -288,15 +311,19 @@ def map_action_to_shot_params(table_state: ff.TableState, action: np.ndarray) ->
         np.ndarray: The mapped shot parameters.
 
     """
-    a = np.interp(action[0], [0, 0], [0, 0])
-    b = np.interp(action[1], [0, 0], [0, 0])
-    theta = np.interp(action[2], [-1, 1], [table_state.MIN_THETA, table_state.MAX_THETA - 0.001])
+    # a = np.interp(action[0], [0, 0], [0, 0])
+    # b = np.interp(action[1], [0, 0], [0, 0])
+    theta = np.interp(
+        action[2], [-1, 1], [table_state.MIN_THETA, table_state.MAX_THETA - 0.001]
+    )
     phi = np.interp(action[3], [-1, 1], [0, 360])
     v = np.interp(action[4], [-1, 1], [0, table_state.MAX_VELOCITY - 0.001])
     return np.array([0, 0, theta, phi, v], dtype=np.float64)
 
 
-def shot_params_from_action(table_state: ff.TableState, action: np.ndarray) -> ff.ShotParams:
+def shot_params_from_action(
+    table_state: ff.TableState, action: np.ndarray
+) -> ff.ShotParams:
     """
     Converts an action into shot parameters.
 
@@ -322,11 +349,21 @@ def action_to_shot(action: np.ndarray, action_space: spaces.Box) -> ff.ShotParam
     MAX_THETA = ff.TableState.MAX_THETA
     MAX_VELOCITY = ff.TableState.MAX_VELOCITY
 
-    a = np.interp(action[0], [action_space.low[0], action_space.high[0]], [MIN_OFFSET, MAX_OFFSET])
-    b = np.interp(action[1], [action_space.low[1], action_space.high[1]], [MIN_OFFSET, MAX_OFFSET])
-    theta = np.interp(action[2], [action_space.low[2], action_space.high[2]], [MIN_THETA, MAX_THETA])
-    phi = np.interp(action[3], [action_space.low[3], action_space.high[3]], [MIN_PHI, MAX_PHI])
-    velocity = np.interp(action[4], [action_space.low[4], action_space.high[4]], [0, MAX_VELOCITY])
+    a = np.interp(
+        action[0], [action_space.low[0], action_space.high[0]], [MIN_OFFSET, MAX_OFFSET]
+    )
+    b = np.interp(
+        action[1], [action_space.low[1], action_space.high[1]], [MIN_OFFSET, MAX_OFFSET]
+    )
+    theta = np.interp(
+        action[2], [action_space.low[2], action_space.high[2]], [MIN_THETA, MAX_THETA]
+    )
+    phi = np.interp(
+        action[3], [action_space.low[3], action_space.high[3]], [MIN_PHI, MAX_PHI]
+    )
+    velocity = np.interp(
+        action[4], [action_space.low[4], action_space.high[4]], [0, MAX_VELOCITY]
+    )
 
     # print(f"a: {a}, b: {b}, theta: {theta}, phi: {phi}, velocity: {velocity}")
 

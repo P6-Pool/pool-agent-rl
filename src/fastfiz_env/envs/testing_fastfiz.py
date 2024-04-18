@@ -66,10 +66,14 @@ class TestingFastFiz(gym.Env):
 
     def _max_episode_steps(self):
         if self.get_wrapper_attr("_time_limit_max_episode_steps") is not None:
-            self.max_episode_steps = self.get_wrapper_attr("_time_limit_max_episode_steps")
+            self.max_episode_steps = self.get_wrapper_attr(
+                "_time_limit_max_episode_steps"
+            )
             self.reward.max_episode_steps = self.max_episode_steps
 
-    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> tuple[np.ndarray, dict]:
+    def reset(
+        self, *, seed: Optional[int] = None, options: Optional[dict] = None
+    ) -> tuple[np.ndarray, dict]:
         super().reset(seed=seed)
 
         if self.max_episode_steps is None:
@@ -90,7 +94,9 @@ class TestingFastFiz(gym.Env):
         observation = self._get_observation()
         info = self._get_info()
 
-        self.logger.info("Reset(%s) - initial observation:\n%s", self.n_episodes, observation)
+        self.logger.info(
+            "Reset(%s) - initial observation:\n%s", self.n_episodes, observation
+        )
         self.logger.info("Reset(%s) - initial info: %s", self.n_episodes, info)
 
         self.n_episodes += 1
@@ -148,7 +154,9 @@ class TestingFastFiz(gym.Env):
     def _get_observation(self):
         ball_positions = get_ball_positions(self.table_state)[: self.TOTAL_BALLS]
         # ball_positions = normalize_ball_positions(ball_positions)  # Normalize to [0, 1]
-        ball_positions = normalize_ball_positions(ball_positions) * 2 - 1  # Normalize to [-1, 1] (symmetric)
+        ball_positions = (
+            normalize_ball_positions(ball_positions) * 2 - 1
+        )  # Normalize to [-1, 1] (symmetric)
         observation = np.zeros((self.TOTAL_BALLS, 2), dtype=np.float32)
         for i, ball_pos in enumerate(ball_positions):
             observation[i] = [*ball_pos]
@@ -185,7 +193,6 @@ class TestingFastFiz(gym.Env):
 
         All values are in the range `[0, TABLE_WIDTH]` and `[0, TABLE_LENGTH]`.
         """
-        table = self.table_state.getTable()
         lower = np.full((self.TOTAL_BALLS, 2), [-1, -1])
         upper = np.full((self.TOTAL_BALLS, 2), [1, 1])
         return spaces.Box(low=lower, high=upper, dtype=np.float32)
@@ -214,4 +221,7 @@ class TestingFastFiz(gym.Env):
         """
         Check if the shot is possible.
         """
-        return self.table_state.isPhysicallyPossible(shot_params) == ff.TableState.OK_PRECONDITION
+        return (
+            self.table_state.isPhysicallyPossible(shot_params)
+            == ff.TableState.OK_PRECONDITION
+        )

@@ -83,7 +83,6 @@ class GameBall:
         relevant_states: list[_BallState] = []
 
         for event in shot.getEventList():
-            event: ff.Event
             if event.getBall1() == self.number:
                 new_ball_event = _BallState.from_event_and_ball(event, event.getBall1Data())
                 relevant_states.append(new_ball_event)

@@ -3,8 +3,9 @@ Gymnasium environments for pool, using FastFiz to simulate the physics of the ga
 
 Avaliable environments:
     - `SimpleFastFiz-v0`: Observes the position of the balls.
-    - `VelocityFastFiz-v0`: Observes the velocity of the balls.
     - `TestingFastFiz-v0`: Observes the position of the balls. Used for testing purposes with options e.g. seed, logging, action_space_id.
+    - `FramesFastFiz-v0`: Observes the position of the balls and the frames of the simulation.
+    - `PocketsFastFiz-v0`: Observes the position of the balls and in play state. Pocketed balls position always corresponds to given pocket center.
 
 
 ### Example
@@ -46,12 +47,6 @@ __all__ = [
 
 from gymnasium.envs.registration import register
 
-
-register(
-    id="VelocityFastFiz-v0",
-    entry_point="fastfiz_env.envs:VelocityFastFiz",
-    additional_wrappers=(wrappers.TimeLimitInjectionWrapper.wrapper_spec(),),
-)
 
 register(
     id="SimpleFastFiz-v0",

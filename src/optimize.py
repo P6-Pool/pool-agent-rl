@@ -144,13 +144,14 @@ def objective(
     start_time: str,
 ) -> float:
     kwargs = sample_ppo_params(trial)
+    N_ENVS = 4
     model = PPO(
         "MlpPolicy",
         env=make_wrapped_vec_env(
-            env_id, num_balls, max_episode_steps, 4, reward_function
+            env_id, num_balls, max_episode_steps, N_ENVS, reward_function
         ),
         **kwargs,
-        tensorboard_log=f"logs/trials_test",
+        tensorboard_log=f"logs/trials",
     )
 
     eval_env = Monitor(
@@ -162,7 +163,7 @@ def objective(
         eval_env,
         trial,
         n_eval_episodes=n_eval_episodes,
-        eval_freq=eval_freq,
+        eval_freq=int(eval_freq / N_ENVS),
         deterministic=True,
     )
 
@@ -171,7 +172,7 @@ def objective(
         model.learn(
             n_timesteps,
             callback=eval_callback,
-            tb_log_name=f"trial_{trial.number}_run_{start_time}",
+            tb_log_name=f"trial_{trial.number}_{env_id.split('FastFiz')[0]}_run_{start_time}".lower(),
         )
     except AssertionError as e:
         # Sometimes, random hyperparams can generate NaN.
@@ -214,7 +215,7 @@ if __name__ == "__main__":
         "--num-balls", type=int, default=2, help="Number of balls in the environment"
     )
     parser.add_argument(
-        "--eval_freq", type=int, default=int(5e5 / 3), help="Evaluation frequency"
+        "--eval_freq", type=int, default=10_000, help="Evaluation frequency"
     )
     parser.add_argument(
         "--n_eval_episodes", type=int, default=100, help="Number of evaluation episodes"

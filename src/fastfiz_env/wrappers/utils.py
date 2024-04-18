@@ -13,7 +13,7 @@ def vec_to_deg(vec: np.ndarray) -> float:
     """
     Gets the angle of a vector.
     """
-    return np.rad2deg(np.arctan2(vec[1], vec[0]))
+    return float(np.rad2deg(np.arctan2(vec[1], vec[0])))
 
 
 def vec_to_abs_deg(vec: np.ndarray) -> float:
@@ -23,42 +23,51 @@ def vec_to_abs_deg(vec: np.ndarray) -> float:
     return vec_to_deg(vec) % 360
 
 
-def vec_length(vec: np.ndarray) -> float:
+def vec_mag(vec: np.ndarray) -> float:
     """
     Gets the length of a vector.
     """
-    return np.linalg.norm(vec)
+    return float(np.linalg.norm(vec))
 
 
-def vec_normalize(vec: np.ndarray) -> np.ndarray:
+def vec_norm(vec: np.ndarray) -> np.ndarray:
     """
     Gets the unit vector of a vector.
     """
-    return vec / vec_length(vec)
+    return vec / vec_mag(vec)
 
 
-def spherical_coordinates(vector: np.ndarray) -> tuple[float, float, float]:
+def cart2sph(x: float, y: float, z: float) -> tuple[float, float, float]:
     """
-    Converts a vector to spherical coordinates.
+    Convert Cartesian coordinates to spherical coordinates.
+
+    Args:
+        x (float): x-coordinate.
+        y (float): y-coordinate.
+        z (float): z-coordinate.
 
     Returns:
-        r: float - The magnitude of the vector.
-        theta: float - The angle from the z-axis.
-        phi: float - The angle in the xy-plane.
+        tuple[float, float, float]: A tuple containing azimuth angle (in degrees), elevation angle (in degrees), and radius.
     """
-
-    assert len(vector) == 3, "Vector must have excatly 3 components."
-    Vx, Vy, Vz = vector
-
-    theta = np.arccos(Vz / np.linalg.norm(vector))
-
-    phi = np.arctan2(Vy, Vx)  # Using arctan2 to get correct quadrant
-    phi = (phi + 2 * np.pi) % (2 * np.pi)
-
-    r = np.linalg.norm(vector)
-
-    return r, np.degrees(theta), np.degrees(phi)
+    hxy: float = np.hypot(x, y)
+    r: float = np.hypot(hxy, z)
+    el: float = np.arctan2(z, hxy)
+    az: float = np.arctan2(y, x)
+    return az, el, r
 
 
-def vec_magnitude(vector):
-    return np.linalg.norm(vector)
+def sph2deg(az: float, el: float, r: float) -> tuple[float, float, float]:
+    """
+    Convert spherical coordinates to degrees.
+
+    Args:
+        az (float): Azimuth angle in radians.
+        el (float): Elevation angle in radians.
+        r (float): Radius.
+
+    Returns:
+        tuple[float, float, float]: A tuple containing azimuth angle (phi, in degrees), elevation angle (theta, in degrees), and radius.
+    """
+    phi: float = np.rad2deg(az % (2 * np.pi))
+    theta: float = np.rad2deg(el % np.pi)
+    return phi, theta, r

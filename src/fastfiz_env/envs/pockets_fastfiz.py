@@ -76,7 +76,7 @@ class PocketsFastFiz(gym.Env):
         """
         Execute an action in the environment.
         """
-
+        self._prev_pocketed = num_balls_pocketed(self.table_state)
         prev_table_state = ff.TableState(self.table_state)
         shot_params = ff.ShotParams(*action)
 
@@ -92,11 +92,15 @@ class PocketsFastFiz(gym.Env):
         return observation, reward, terminated, truncated, info
 
     def _get_observation(self):
-        ball_positions = get_ball_positions(self.table_state)[: self.TOTAL_BALLS]
+        return self.compute_observation(self.table_state)
+
+    @classmethod
+    def compute_observation(cls, table_state: ff.TableState) -> np.ndarray:
+        ball_positions = get_ball_positions(table_state)[: cls.TOTAL_BALLS]
         ball_positions = normalize_ball_positions(ball_positions) * 2 - 1
-        observation = np.zeros((self.TOTAL_BALLS, 3), dtype=np.float32)
+        observation = np.zeros((cls.TOTAL_BALLS, 3), dtype=np.float32)
         for i, ball_pos in enumerate(ball_positions):
-            ball = self.table_state.getBall(i)
+            ball = table_state.getBall(i)
             if ball.isPocketed():
                 pocket = ball_state_to_pocket(ball.getState())
                 pocket_pos = get_pocket_center(pocket)
@@ -144,6 +148,11 @@ class PocketsFastFiz(gym.Env):
         return possible_shot(self.table_state, shot_params)
 
     def _is_terminal_state(self) -> bool:
+        pocketed = num_balls_pocketed(self.table_state)
+
+        if pocketed <= self._prev_pocketed:
+            return True
+
         return terminal_state(self.table_state)
 
     def _game_won(self) -> bool:

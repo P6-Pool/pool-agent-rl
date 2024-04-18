@@ -3,8 +3,7 @@ import os
 from fastfiz_renderer import GameHandler
 import numpy as np
 import fastfiz_env
-from fastfiz_env.envs.frames_fastfiz import FramesFastFiz
-from fastfiz_env.envs.simple_fastfiz import SimpleFastFiz
+from fastfiz_env.envs import FramesFastFiz, SimpleFastFiz, PocketsFastFiz
 from fastfiz_env.reward_functions import reward_function
 from fastfiz_env.reward_functions.default_reward import DefaultReward
 from fastfiz_env.utils.fastfiz import (
@@ -67,15 +66,15 @@ def play(
     )
 
 
-env = FramesFastFiz()
-env = SimpleFastFiz()
+# env = FramesFastFiz()
+# env = SimpleFastFiz()
 
 
 class Agent:
-    def __init__(self, model) -> None:
+    def __init__(self, model, env) -> None:
         self.prev_ts = None
         self.model = model
-        self.env = FastFizActionWrapper(FramesFastFiz, ActionSpaces.VECTOR_2D)
+        self.env = env
         self.shot = None
 
     def decide_shot(self, table_state: ff.TableState) -> Optional[ff.ShotParams]:
@@ -84,13 +83,19 @@ class Agent:
             return None
 
         for _ in range(10):
-            if isinstance(env, FramesFastFiz):
+            if isinstance(self.env, FramesFastFiz):
                 if self.prev_ts is None:
-                    obs = env.compute_observation(table_state, table_state, self.shot)
+                    obs = self.env.compute_observation(
+                        table_state, table_state, self.shot
+                    )
                 else:
-                    obs = env.compute_observation(self.prev_ts, table_state, self.shot)
+                    obs = self.env.compute_observation(
+                        self.prev_ts, table_state, self.shot
+                    )
+            elif isinstance(self.env, PocketsFastFiz):
+                obs = self.env.compute_observation(table_state)
             else:
-                obs = env.compute_observation(table_state)
+                obs = self.env.compute_observation(table_state)
             action, _ = self.model.predict(obs, deterministic=True)
             action = self.env.action(action)
             shot = ff.ShotParams(*action)
@@ -115,10 +120,10 @@ def main() -> None:
 
     model = PPO.load(args.model)
 
-    env_vec = fastfiz_env.make("SimpleFastFiz-v0", reward_function=DefaultReward)
-    env_vec = FastFizActionWrapper(env_vec, ActionSpaces.NO_OFFSET_3D)
-
-    agent = Agent(model)
+    # env_vec = fastfiz_env.make("SimpleFastFiz-v0", reward_function=DefaultReward)
+    # env_vec = FastFizActionWrapper(env_vec, ActionSpaces.NO_OFFSET_3D)
+    env = FastFizActionWrapper(PocketsFastFiz, ActionSpaces.NO_OFFSET_3D)
+    agent = Agent(model, env)
     play(agent.decide_shot, balls=2, episodes=100)
 
 

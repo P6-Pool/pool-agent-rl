@@ -1,4 +1,3 @@
-from p5 import *
 import fastfiz as ff
 import vectormath as vmath
 

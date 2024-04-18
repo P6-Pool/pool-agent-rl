@@ -26,6 +26,7 @@ class SimpleFastFiz(gym.Env):
         *,
         reward_function: RewardFunction = DefaultReward,
         num_balls: int = 16,
+        options: Optional[dict] = None,
     ) -> None:
         super().__init__()
         self.num_balls = num_balls
@@ -35,6 +36,8 @@ class SimpleFastFiz(gym.Env):
         self.reward = reward_function
         self.max_episode_steps = None
         self.elapsed_steps = None
+        self.options = options or {}
+        self._quick_terminate = self.options.get("quick_terminate", False)
 
     def _get_time_limit_attrs(self):
         try:
@@ -131,10 +134,11 @@ class SimpleFastFiz(gym.Env):
         return possible_shot(self.table_state, shot_params)
 
     def _is_terminal_state(self) -> bool:
-        pocketed = num_balls_pocketed(self.table_state)
+        if self._quick_terminate:
+            pocketed = num_balls_pocketed(self.table_state)
 
-        if pocketed <= self._prev_pocketed:
-            return True
+            if pocketed <= self._prev_pocketed:
+                return True
 
         return terminal_state(self.table_state)
 

@@ -4,7 +4,7 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 
-from fastfiz_env.utils.fastfiz.fastfiz import num_balls_in_play, num_balls_pocketed
+from fastfiz_env.utils.fastfiz.fastfiz import num_balls_pocketed
 
 from ..utils.fastfiz import (
     create_random_table_state,

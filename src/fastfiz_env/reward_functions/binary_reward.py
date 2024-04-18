@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Optional, Union
+from typing import Optional, Union
 import fastfiz as ff
 from .reward_function import RewardFunction, Weight
 import numpy as np

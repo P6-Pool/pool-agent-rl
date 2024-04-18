@@ -1,4 +1,3 @@
-from typing import Optional
 from gymnasium.envs.registration import EnvSpec
 import gymnasium as gym
 

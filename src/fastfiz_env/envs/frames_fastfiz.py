@@ -5,10 +5,8 @@ from gymnasium import spaces
 
 from fastfiz_env.envs.utils import game_won, terminal_state
 from ..utils.fastfiz import (
-    shot_params_from_action,
     get_ball_positions,
     create_random_table_state,
-    get_ball_velocity,
     normalize_ball_positions,
     normalize_ball_velocity,
     is_pocketed_state,

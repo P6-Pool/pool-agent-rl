@@ -6,14 +6,12 @@ from stable_baselines3.common.vec_env import VecEnv
 import optuna
 import time
 import torch
-import torch.nn as nn
 from fastfiz_env.make import make_callable_wrapped_env
 from fastfiz_env.reward_functions import DefaultReward, WinningReward, RewardFunction
 from optuna.pruners import MedianPruner
 from optuna.samplers import TPESampler
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import EvalCallback
-from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.env_util import make_vec_env
 from typing import Any, Dict
 from hyperparams import params_to_kwargs

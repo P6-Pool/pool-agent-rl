@@ -2,22 +2,17 @@ import fastfiz as ff
 import os
 from fastfiz_renderer import GameHandler
 import numpy as np
-import fastfiz_env
-from fastfiz_env.envs import FramesFastFiz, SimpleFastFiz, PocketsFastFiz
-from fastfiz_env.reward_functions import reward_function
-from fastfiz_env.reward_functions.default_reward import DefaultReward
+from fastfiz_env.envs import FramesFastFiz, PocketsFastFiz
 from fastfiz_env.utils.fastfiz import (
     create_random_table_state,
-    get_ball_positions,
     normalize_ball_positions,
 )
 from fastfiz_env.envs.utils import game_won, possible_shot
 from stable_baselines3 import PPO
-from typing import Optional, Callable
+from typing import Optional
 import argparse
 
 from fastfiz_env.wrappers.action import ActionSpaces, FastFizActionWrapper
-from fastfiz_env.wrappers.utils import spherical_coordinates
 
 
 def get_play_config() -> dict:

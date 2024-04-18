@@ -1,4 +1,3 @@
-from ..reward_function import Weight
 
 
 ConstantWeight = 1

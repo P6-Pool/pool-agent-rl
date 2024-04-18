@@ -85,9 +85,9 @@ def train(
             tb_log_name=model_name,
             progress_bar=True,
         )
-        print(f"Training finished.")
+        print("Training finished.")
     except KeyboardInterrupt:
-        print(f"Training interrupted.")
+        print("Training interrupted.")
     finally:
         model.save(model_path)
         print(f"Model saved: {model_path}")

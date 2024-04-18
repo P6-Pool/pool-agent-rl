@@ -2,7 +2,6 @@ import unittest
 import fastfiz as ff
 from fastfiz_env.reward_functions.common import *
 from fastfiz_env.reward_functions import CombinedReward
-from fastfiz_env.reward_functions.reward_function import Weight
 from fastfiz_env.utils.fastfiz import create_table_state
 import numpy as np
 

@@ -111,7 +111,7 @@ def main() -> None:
 
     # env_vec = fastfiz_env.make("SimpleFastFiz-v0", reward_function=DefaultReward)
     # env_vec = FastFizActionWrapper(env_vec, ActionSpaces.NO_OFFSET_3D)
-    env = FastFizActionWrapper(PocketsFastFiz, ActionSpaces.NO_OFFSET_3D)
+    env = FastFizActionWrapper(PocketsFastFiz, ActionSpaces.VECTOR_3D)
     agent = Agent(model, env)
     play(agent.decide_shot, balls=2, episodes=100)
 

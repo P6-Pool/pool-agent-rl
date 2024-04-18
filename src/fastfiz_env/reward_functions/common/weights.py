@@ -1,5 +1,3 @@
-
-
 ConstantWeight = 1
 NegativeConstantWeight = -ConstantWeight
 

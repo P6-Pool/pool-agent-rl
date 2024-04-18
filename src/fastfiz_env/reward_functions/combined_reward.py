@@ -1,3 +1,4 @@
+from typing import Optional
 from .reward_function import RewardFunction, Weight
 from .binary_reward import BinaryReward
 import fastfiz as ff
@@ -12,7 +13,7 @@ class CombinedReward(RewardFunction):
     def __init__(
         self,
         weight: Weight = 1,
-        max_episode_steps: int = None,
+        max_episode_steps: Optional[int] = None,
         *,
         reward_functions: list[RewardFunction],
         short_circuit: bool = False,
@@ -37,11 +38,11 @@ class CombinedReward(RewardFunction):
         self.max_episode_steps = max_episode_steps
 
     @property
-    def max_episode_steps(self) -> int:
+    def max_episode_steps(self) -> Optional[int]:
         return self._max_episode_steps
 
     @max_episode_steps.setter
-    def max_episode_steps(self, value: int) -> None:
+    def max_episode_steps(self, value: Optional[int]) -> None:
         self._max_episode_steps = value
         for reward in self.reward_functions:
             reward.max_episode_steps = value

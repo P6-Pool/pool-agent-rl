@@ -56,7 +56,7 @@ def make_wrapped_env(
         disable_env_checker=False,
         **kwargs,
     )
-    env = FastFizActionWrapper(env, action_space_id=ActionSpaces.NO_OFFSET_3D)
+    env = FastFizActionWrapper(env, action_space_id=ActionSpaces.VECTOR_3D)
     return env
 
 

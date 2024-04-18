@@ -1,5 +1,6 @@
 import argparse
 import gymnasium as gym
+from stable_baselines3.common.vec_env import VecEnv
 import optuna
 import time
 import torch
@@ -102,7 +103,7 @@ class TrialEvalCallback(EvalCallback):
 
     def __init__(
         self,
-        eval_env: gym.Env,
+        eval_env: gym.Env | VecEnv,
         trial: optuna.Trial,
         n_eval_episodes: int = 5,
         eval_freq: int = 10000,
@@ -145,22 +146,21 @@ def objective(
 ) -> float:
     kwargs = sample_ppo_params(trial)
     N_ENVS = 4
+
+    env = make_wrapped_vec_env(
+        env_id, num_balls, max_episode_steps, N_ENVS, reward_function
+    )
+
     model = PPO(
         "MlpPolicy",
-        env=make_wrapped_vec_env(
-            env_id, num_balls, max_episode_steps, N_ENVS, reward_function
-        ),
+        env,
         **kwargs,
         tensorboard_log=f"logs/trials",
     )
 
-    eval_env = Monitor(
-        make_wrapped_env(env_id, num_balls, max_episode_steps, reward_function)
-    )
-
     # Create the callback that will periodically evaluate and report the performance.
     eval_callback = TrialEvalCallback(
-        eval_env,
+        env,
         trial,
         n_eval_episodes=n_eval_episodes,
         eval_freq=int(eval_freq / N_ENVS),
@@ -183,7 +183,7 @@ def objective(
     finally:
         # Free memory.
         model.env.close()  # type: ignore
-        eval_env.close()
+        env.close()
 
     # Tell the optimizer that the trial failed.
     if nan_encountered:
@@ -227,6 +227,7 @@ if __name__ == "__main__":
         help="Environment ID",
         required=True,
     )
+    parser.add_argument("--n_jobs", type=int, default=1)
     parser.add_argument("--max_episode_steps", type=int, default=20)
     args = parser.parse_args()
 
@@ -257,7 +258,7 @@ if __name__ == "__main__":
     )
 
     try:
-        study.optimize(obj_fn, n_trials=args.n_trials, timeout=3600)
+        study.optimize(obj_fn, n_trials=args.n_trials, timeout=3600, n_jobs=args.n_jobs)
     except KeyboardInterrupt:
         pass
     except Exception as e:

@@ -1,4 +1,6 @@
 import argparse
+import json
+import os
 import gymnasium as gym
 from stable_baselines3.common.vec_env import VecEnv
 import optuna
@@ -195,6 +197,19 @@ def objective(
     return eval_callback.last_mean_reward
 
 
+def save_trial(trial: optuna.trial.FrozenTrial, path: str) -> None:
+    with open(path, "w") as fp:
+        json.dump(
+            {
+                "value": trial.value,
+                "params": trial.params,
+                "user_attrs": trial.user_attrs,
+            },
+            fp,
+            indent=4,
+        )
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Description of your program")
     parser.add_argument("--n_trials", type=int, default=20, help="Number of trials")
@@ -275,6 +290,11 @@ if __name__ == "__main__":
     for key, value in trial.params.items():
         print("    {}: {}".format(key, value))
 
-    print("  User attrs:")
-    for key, value in trial.user_attrs.items():
-        print("    {}: {}".format(key, value))
+    if len(trial.user_attrs) > 0:
+        print("  User attrs:")
+        for key, value in trial.user_attrs.items():
+            print("    {}: {}".format(key, value))
+
+    path = os.path.join("logs", "trials", f"best_trial_run_{start_time}.json")
+    print(f"Saving best trial: {path}")
+    save_trial(trial, path)

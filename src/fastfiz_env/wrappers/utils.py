@@ -11,27 +11,26 @@ def cart2sph(x: float, y: float, z: float) -> tuple[float, float, float]:
         z (float): z-coordinate.
 
     Returns:
-        tuple[float, float, float]: A tuple containing azimuth angle (in degrees), elevation angle (in degrees), and radius.
+        tuple[float, float, float]: A tuple containing radius (magnitude), elevation angle (theta, in radians), and azimuth angle (phi, in radians).
     """
-    hxy: float = np.hypot(x, y)
-    r: float = np.hypot(hxy, z)
-    el: float = np.arctan2(z, hxy)
+    r = np.sqrt(x**2 + y**2 + z**2)
+    el: float = np.arccos(z / r)
     az: float = np.arctan2(y, x)
-    return az, el, r
+    return r, el, az
 
 
-def sph2deg(az: float, el: float, r: float) -> tuple[float, float, float]:
+def sph2deg(r: float, el: float, az: float) -> tuple[float, float, float]:
     """
     Convert spherical coordinates to degrees.
 
     Args:
-        az (float): Azimuth angle in radians.
-        el (float): Elevation angle in radians.
         r (float): Radius.
+        el (float): Elevation angle in radians.
+        az (float): Azimuth angle in radians.
 
     Returns:
-        tuple[float, float, float]: A tuple containing azimuth angle (phi, in degrees), elevation angle (theta, in degrees), and radius.
+        tuple[float, float, float]: A tuple containing radius (magnitude), elevation angle (theta, in degrees), and azimuth angle (phi, in degrees).
     """
-    phi: float = np.rad2deg(az % (2 * np.pi))
-    theta: float = np.rad2deg(el % np.pi)
-    return phi, theta, r
+    theta: float = np.rad2deg(el)
+    phi: float = np.rad2deg(az)
+    return r, theta, phi

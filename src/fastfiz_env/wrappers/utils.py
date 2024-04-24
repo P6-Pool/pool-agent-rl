@@ -14,8 +14,9 @@ def cart2sph(x: float, y: float, z: float) -> tuple[float, float, float]:
         tuple[float, float, float]: A tuple containing radius (magnitude), elevation angle (theta, in radians), and azimuth angle (phi, in radians).
     """
     r = np.sqrt(x**2 + y**2 + z**2)
-    el: float = np.arccos(z / r)
-    az: float = np.arctan2(y, x)
+    el = np.arccos(z / r)
+    az = (np.arctan2(y, x) + 2 * np.pi) % (2 * np.pi)  # Using arctan2 to get correct quadrant
+
     return r, el, az
 
 
@@ -31,6 +32,6 @@ def sph2deg(r: float, el: float, az: float) -> tuple[float, float, float]:
     Returns:
         tuple[float, float, float]: A tuple containing radius (magnitude), elevation angle (theta, in degrees), and azimuth angle (phi, in degrees).
     """
-    theta: float = np.rad2deg(el)
-    phi: float = np.rad2deg(az)
-    return r, theta, phi
+    el: float = np.rad2deg(el)
+    az: float = np.rad2deg(az)
+    return r, el, az

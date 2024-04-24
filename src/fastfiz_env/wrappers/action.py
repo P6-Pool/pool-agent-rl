@@ -134,9 +134,9 @@ class FastFizActionWrapper(ActionWrapper):
             case ActionSpaces.VECTOR_3D:
                 x, y, z = action
                 r, el, az = cart2sph(x, y, z)
-                r, theta, phi = sph2deg(r, el, az)
-                phi = float(np.interp(az, (0, np.rad2deg(np.pi)), (self.MIN_PHI, self.MAX_PHI)))
-                theta = float(np.interp(el, (-np.rad2deg(np.pi), np.rad2deg(np.pi)), (self.MIN_THETA, self.MAX_THETA)))
+                r, el, az = sph2deg(r, el, az)
+                phi = float(np.interp(az, (0, 360), (self.MIN_PHI, self.MAX_PHI)))
+                theta = float(np.interp(el, (0, 180), (self.MIN_THETA, self.MAX_THETA)))
                 velocity = float(np.interp(r, (0, np.sqrt(3)), (self.MIN_VELOCITY, self.MAX_VELOCITY)))
             case ActionSpaces.NORM_3D:
                 theta = float(np.interp(action[0], (-1, 1), (self.MIN_THETA, self.MAX_THETA)))

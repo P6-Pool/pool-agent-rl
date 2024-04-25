@@ -13,6 +13,7 @@ from stable_baselines3.common.callbacks import (
     CallbackList,
 )
 from stable_baselines3.common.env_util import make_vec_env
+from fastfiz_env.wrappers.action import ActionSpaces
 from hyperparams import params_to_kwargs
 
 
@@ -40,11 +41,12 @@ def train(
     logs_path: str = "logs/",
     models_path: str = "models/",
     reward_function: RewardFunction = DefaultReward,
+    action_space_id: ActionSpaces = ActionSpaces.VECTOR_3D,
     callbacks=None,
     params: Optional[dict] = None,
 ) -> None:
     env = make_vec_env(
-        make_callable_wrapped_env(env_id, num_balls, max_episode_steps, reward_function),
+        make_callable_wrapped_env(env_id, num_balls, max_episode_steps, reward_function, action_space_id=action_space_id),
         n_envs=n_envs,
     )
 
@@ -122,6 +124,8 @@ if __name__ == "__main__":
         help="Path to hyperparameters file (file must have key 'params' with dict of hyperparameters",
     )
 
+    parser.add_argument("-a", "--action_id", type=ActionSpaces, choices=list(ActionSpaces), default=ActionSpaces.VECTOR_3D)
+
     args = parser.parse_args()
 
     reward_function = DefaultReward if args.reward == "DefaultReward" else WinningReward
@@ -164,5 +168,6 @@ if __name__ == "__main__":
         logs_path=logs_path,
         models_path=models_path,
         reward_function=reward_function,
+        action_space_id=args.action_id,
         params=params,
     )

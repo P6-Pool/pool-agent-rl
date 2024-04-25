@@ -43,6 +43,7 @@ def make_wrapped_env(
     num_balls: int,
     max_episode_steps: int,
     reward_function: RewardFunction,
+    action_space_id: ActionSpaces,
     **kwargs,
 ):
     """
@@ -56,7 +57,7 @@ def make_wrapped_env(
         disable_env_checker=False,
         **kwargs,
     )
-    env = FastFizActionWrapper(env, action_space_id=ActionSpaces.VECTOR_3D)
+    env = FastFizActionWrapper(env, action_space_id=action_space_id)
     return env
 
 
@@ -64,7 +65,8 @@ def make_callable_wrapped_env(
     env_id: str,
     num_balls: int,
     max_episode_steps: int,
-    reward_function: RewardFunction,
+    reward_function: RewardFunction = DefaultReward,
+    action_space_id: ActionSpaces = ActionSpaces.VECTOR_3D,
     **kwargs,
 ):
     """
@@ -73,6 +75,6 @@ def make_callable_wrapped_env(
     """
 
     def _init() -> gym.Env:
-        return make_wrapped_env(env_id, num_balls, max_episode_steps, reward_function, **kwargs)
+        return make_wrapped_env(env_id, num_balls, max_episode_steps, reward_function, action_space_id, **kwargs)
 
     return _init

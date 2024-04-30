@@ -1,7 +1,8 @@
 import argparse
 import glob
+import json
 import os
-from fastfiz_env.make import make_wrapped_vec_env
+from fastfiz_env.make import make_callable_wrapped_env
 from fastfiz_env.reward_functions import RewardFunction
 from typing import Optional
 from stable_baselines3 import PPO
@@ -11,6 +12,9 @@ from stable_baselines3.common.callbacks import (
     EvalCallback,
     CallbackList,
 )
+from stable_baselines3.common.env_util import make_vec_env
+from fastfiz_env.wrappers.action import ActionSpaces
+from hyperparams import params_to_kwargs
 
 
 def get_latest_run_id(log_path: str, name: str) -> int:
@@ -23,8 +27,8 @@ def get_latest_run_id(log_path: str, name: str) -> int:
     return id
 
 
-def get_model_name(env_name: str, balls: int, algo: str = "PPO") -> str:
-    return f"{env_name.split('FastFiz-v0')[0]}-{balls}_balls-{algo}".lower()
+def get_model_name(env_name: str, balls: int, algo: str = "PPO", action_space_id=ActionSpaces.VECTOR_3D) -> str:
+    return f"{env_name.split('FastFiz-v0')[0]}-{balls}_balls-{action_space_id.name}-{algo}".lower()
 
 
 def train(
@@ -37,16 +41,21 @@ def train(
     logs_path: str = "logs/",
     models_path: str = "models/",
     reward_function: RewardFunction = DefaultReward,
+    action_space_id: ActionSpaces = ActionSpaces.VECTOR_3D,
     callbacks=None,
+    params: Optional[dict] = None,
 ) -> None:
-    env = make_wrapped_vec_env(
-        env_id, num_balls, max_episode_steps, n_envs, reward_function
+    env = make_vec_env(
+        make_callable_wrapped_env(env_id, num_balls, max_episode_steps, reward_function, action_space_id=action_space_id),
+        n_envs=n_envs,
     )
 
-    model_name = get_model_name(env_id, num_balls)
+    hyperparams = params_to_kwargs(**params) if params else {}
+    print(hyperparams)
+    model_name = get_model_name(env_id, num_balls, action_space_id)
 
     if model_dir is None:
-        model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=logs_path)
+        model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=logs_path, **hyperparams)
     else:
         model = PPO.load(model_dir, env=env, verbose=1, tensorboard_log=logs_path)
         pretrained_name = model_dir.split("/")[-1].rsplit(".zip", 1)[0]
@@ -78,9 +87,9 @@ def train(
             tb_log_name=model_name,
             progress_bar=True,
         )
-        print(f"Training finished.")
+        print("Training finished.")
     except KeyboardInterrupt:
-        print(f"Training interrupted.")
+        print("Training interrupted.")
     finally:
         model.save(model_path)
         print(f"Model saved: {model_path}")
@@ -107,6 +116,16 @@ if __name__ == "__main__":
         choices=["DefaultReward", "WinningReward"],
         default="DefaultReward",
     )
+
+    # Hyper params
+    parser.add_argument(
+        "--params",
+        type=str,
+        help="Path to hyperparameters file (file must have key 'params' with dict of hyperparameters",
+    )
+
+    parser.add_argument("-a", "--action_id", type=ActionSpaces, choices=list(ActionSpaces), default=ActionSpaces.VECTOR_3D)
+
     args = parser.parse_args()
 
     reward_function = DefaultReward if args.reward == "DefaultReward" else WinningReward
@@ -119,6 +138,15 @@ if __name__ == "__main__":
     total_timesteps = args.n_time_steps
     logs_path = args.logs_path
     models_path = args.models_path
+    reward = args.reward
+    params = None
+    if args.params:
+        params_path = args.params
+        assert os.path.exists(logs_path), f"params path does not exist: {logs_path}"
+        with open(params_path, "r") as fp:
+            params = json.load(fp)
+        assert "params" in params, "params file must have key 'params' with dict of hyperparameters"
+        params = params["params"]
 
     print(
         f"Starting training on {env_id} with following settings:\n\
@@ -128,7 +156,8 @@ if __name__ == "__main__":
           model_path: {model_path}\n\
           logs_path: {logs_path}\n\
           models_path: {models_path}\n\
-          reward_function: {args.reward}\n"
+          reward_function: {reward}\n\
+          action_space_id: {args.action_id}\n"
     )
 
     train(
@@ -140,4 +169,6 @@ if __name__ == "__main__":
         logs_path=logs_path,
         models_path=models_path,
         reward_function=reward_function,
+        action_space_id=args.action_id,
+        params=params,
     )

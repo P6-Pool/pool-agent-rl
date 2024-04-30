@@ -1,4 +1,3 @@
-from p5 import *
 import fastfiz as ff
 import vectormath as vmath
 
@@ -42,43 +41,25 @@ class GameBall:
         time_since_event_start = time_since_shot_start - cur_state.e_time
 
         def calc_sliding_displacement(delta_time: float) -> vmath.Vector2:
-            rotational_velocity: vmath.Vector3 = GameBall.RADIUS * vmath.Vector3(
-                0, 0, cur_state.ang_vel.z
-            ).cross(cur_state.ang_vel)
-            relative_velocity = cur_state.vel + vmath.Vector2(
-                rotational_velocity.x, rotational_velocity.y
+            rotational_velocity: vmath.Vector3 = GameBall.RADIUS * vmath.Vector3(0, 0, cur_state.ang_vel.z).cross(
+                cur_state.ang_vel
             )
+            relative_velocity = cur_state.vel + vmath.Vector2(rotational_velocity.x, rotational_velocity.y)
             self.velocity = (
-                cur_state.vel
-                - delta_time
-                * gravitational_const
-                * sliding_friction_const
-                * relative_velocity.normalize()
+                cur_state.vel - delta_time * gravitational_const * sliding_friction_const * relative_velocity.normalize()
             )
             return (
                 cur_state.vel * delta_time
-                - 0.5
-                * sliding_friction_const
-                * gravitational_const
-                * delta_time**2
-                * relative_velocity.normalize()
+                - 0.5 * sliding_friction_const * gravitational_const * delta_time**2 * relative_velocity.normalize()
             )
 
         def calc_rolling_displacement(delta_time: float) -> vmath.Vector2:
             self.velocity = (
-                cur_state.vel
-                - gravitational_const
-                * rolling_friction_const
-                * delta_time
-                * cur_state.vel.copy().normalize()
+                cur_state.vel - gravitational_const * rolling_friction_const * delta_time * cur_state.vel.copy().normalize()
             )
             return (
                 cur_state.vel * delta_time
-                - 0.5
-                * rolling_friction_const
-                * gravitational_const
-                * delta_time**2
-                * cur_state.vel.copy().normalize()
+                - 0.5 * rolling_friction_const * gravitational_const * delta_time**2 * cur_state.vel.copy().normalize()
             )
 
         displacement = vmath.Vector2(0, 0)
@@ -102,16 +83,11 @@ class GameBall:
         relevant_states: list[_BallState] = []
 
         for event in shot.getEventList():
-            event: ff.Event
             if event.getBall1() == self.number:
-                new_ball_event = _BallState.from_event_and_ball(
-                    event, event.getBall1Data()
-                )
+                new_ball_event = _BallState.from_event_and_ball(event, event.getBall1Data())
                 relevant_states.append(new_ball_event)
             elif event.getBall2() == self.number:
-                new_ball_event = _BallState.from_event_and_ball(
-                    event, event.getBall2Data()
-                )
+                new_ball_event = _BallState.from_event_and_ball(event, event.getBall2Data())
                 relevant_states.append(new_ball_event)
 
         return relevant_states

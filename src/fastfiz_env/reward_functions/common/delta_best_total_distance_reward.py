@@ -19,9 +19,7 @@ class DeltaBestTotalDistanceReward(RewardFunction):
         self.pockets = pocket_centers(table_state)
         # num_balls = num_balls_in_play(table_state)
         ball_positions = get_ball_positions(table_state)[1 : self.num_balls]
-        self.min_total_dist = np.sum(
-            distances_to_closest_pocket(ball_positions, self.pockets)
-        )
+        self.min_total_dist = np.sum(distances_to_closest_pocket(ball_positions, self.pockets))
 
     def reward(
         self,
@@ -34,9 +32,7 @@ class DeltaBestTotalDistanceReward(RewardFunction):
         """
         num_balls = num_balls_in_play(table_state)
         ball_positions = get_ball_positions(table_state)[1:num_balls]
-        new_total_dist = np.sum(
-            distances_to_closest_pocket(ball_positions, self.pockets)
-        )
+        new_total_dist = np.sum(distances_to_closest_pocket(ball_positions, self.pockets))
 
         reward = float(self.min_total_dist - new_total_dist)
 

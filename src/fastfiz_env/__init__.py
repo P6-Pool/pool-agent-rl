@@ -3,7 +3,6 @@ Gymnasium environments for pool, using FastFiz to simulate the physics of the ga
 
 Avaliable environments:
     - `SimpleFastFiz-v0`: Observes the position of the balls.
-    - `TestingFastFiz-v0`: Observes the position of the balls. Used for testing purposes with options e.g. seed, logging, action_space_id.
     - `FramesFastFiz-v0`: Observes the position of the balls and the frames of the simulation.
     - `PocketsFastFiz-v0`: Observes the position of the balls and in play state. Pocketed balls position always corresponds to given pocket center.
 
@@ -28,14 +27,16 @@ model.learn(total_timesteps=10_000)
 
 """
 
-from .make import make, make_wrapped_vec_env, make_wrapped_env
+__version__ = "0.0.1"
+
+from .make import make, make_wrapped_env, make_callable_wrapped_env
 from .reward_functions import DefaultReward, RewardFunction, CombinedReward
 from . import envs, utils, wrappers, reward_functions
 
 __all__ = [
     "make",
-    "make_wrapped_vec_env",
     "make_wrapped_env",
+    "make_callable_wrapped_env",
     "DefaultReward",
     "RewardFunction",
     "CombinedReward",
@@ -54,12 +55,6 @@ register(
     additional_wrappers=(wrappers.TimeLimitInjectionWrapper.wrapper_spec(),),
 )
 
-
-register(
-    id="TestingFastFiz-v0",
-    entry_point="fastfiz_env.envs:TestingFastFiz",
-    additional_wrappers=(wrappers.TimeLimitInjectionWrapper.wrapper_spec(),),
-)
 
 register(
     id="FramesFastFiz-v0",

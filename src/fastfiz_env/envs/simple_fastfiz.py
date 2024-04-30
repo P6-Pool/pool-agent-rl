@@ -4,7 +4,7 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 
-from fastfiz_env.utils.fastfiz.fastfiz import num_balls_in_play, num_balls_pocketed
+from fastfiz_env.utils.fastfiz.fastfiz import num_balls_pocketed
 
 from ..utils.fastfiz import (
     create_random_table_state,
@@ -26,6 +26,7 @@ class SimpleFastFiz(gym.Env):
         *,
         reward_function: RewardFunction = DefaultReward,
         num_balls: int = 16,
+        options: Optional[dict] = None,
     ) -> None:
         super().__init__()
         self.num_balls = num_balls
@@ -35,6 +36,8 @@ class SimpleFastFiz(gym.Env):
         self.reward = reward_function
         self.max_episode_steps = None
         self.elapsed_steps = None
+        self.options = options or {}
+        self._quick_terminate = self.options.get("quick_terminate", False)
 
     def _get_time_limit_attrs(self):
         try:
@@ -49,15 +52,13 @@ class SimpleFastFiz(gym.Env):
 
         self.reward.max_episode_steps = self.max_episode_steps
 
-    def reset(
-        self, *, seed: Optional[int] = None, options: Optional[dict] = None
-    ) -> tuple[np.ndarray, dict]:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> tuple[np.ndarray, dict]:
         super().reset(seed=seed)
 
         if self.max_episode_steps is None or self.elapsed_steps is None:
             self._get_time_limit_attrs()
 
-        self.table_state = create_random_table_state(self.num_balls)
+        self.table_state = create_random_table_state(self.num_balls, seed=seed)
         self.reward.reset(self.table_state)
         self._prev_pocketed = 0
 
@@ -131,10 +132,11 @@ class SimpleFastFiz(gym.Env):
         return possible_shot(self.table_state, shot_params)
 
     def _is_terminal_state(self) -> bool:
-        pocketed = num_balls_pocketed(self.table_state)
+        if self._quick_terminate:
+            pocketed = num_balls_pocketed(self.table_state)
 
-        if pocketed <= self._prev_pocketed:
-            return True
+            if pocketed <= self._prev_pocketed:
+                return True
 
         return terminal_state(self.table_state)
 

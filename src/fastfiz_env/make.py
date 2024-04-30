@@ -3,7 +3,6 @@ import gymnasium as gym
 
 from fastfiz_env.wrappers.action import ActionSpaces, FastFizActionWrapper
 from .reward_functions import RewardFunction, DefaultReward
-from stable_baselines3.common.env_util import make_vec_env
 
 
 def make(
@@ -13,7 +12,7 @@ def make(
     num_balls: int = 16,
     max_episode_steps: int = 100,
     disable_env_checker: bool = True,
-    **kwargs
+    **kwargs,
 ) -> gym.Env:
     """
     Create an instance of the specified environment.
@@ -40,32 +39,42 @@ def make(
 
 
 def make_wrapped_env(
-    env_id: str, num_balls: int, max_episode_steps: int, reward_function: RewardFunction
+    env_id: str,
+    num_balls: int,
+    max_episode_steps: int,
+    reward_function: RewardFunction,
+    action_space_id: ActionSpaces,
+    **kwargs,
 ):
+    """
+    Create an instance of the specified environment with the FastFizActionWrapper.
+    """
     env = make(
         env_id,
         reward_function=reward_function,
         num_balls=num_balls,
         max_episode_steps=max_episode_steps,
         disable_env_checker=False,
+        **kwargs,
     )
-    env = FastFizActionWrapper(env, action_space_id=ActionSpaces.NO_OFFSET_3D)
+    env = FastFizActionWrapper(env, action_space_id=action_space_id)
     return env
 
 
-def make_wrapped_vec_env(
+def make_callable_wrapped_env(
     env_id: str,
     num_balls: int,
     max_episode_steps: int,
-    n_envs: int,
-    reward_function: RewardFunction,
+    reward_function: RewardFunction = DefaultReward,
+    action_space_id: ActionSpaces = ActionSpaces.VECTOR_3D,
+    **kwargs,
 ):
+    """
+    Create a callable function that returns an instance of the specified environment with the FastFizActionWrapper.
+    This is useful for creating environments in parallel or with stable-baselines `make_vec_env` function.
+    """
 
-    def make_env():
-        return make_wrapped_env(env_id, num_balls, max_episode_steps, reward_function)
+    def _init() -> gym.Env:
+        return make_wrapped_env(env_id, num_balls, max_episode_steps, reward_function, action_space_id, **kwargs)
 
-    env = make_vec_env(
-        make_env,
-        n_envs=n_envs,
-    )
-    return env
+    return _init

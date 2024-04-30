@@ -18,8 +18,5 @@ class ImpossibleShotReward(BinaryReward):
         Reward function returns 1 if the shot is impossible, 0 otherwise.
         """
         shot_params = ff.ShotParams(*action)
-        impossible_shot = (
-            table_state.isPhysicallyPossible(shot_params)
-            != ff.TableState.OK_PRECONDITION
-        )
+        impossible_shot = table_state.isPhysicallyPossible(shot_params) != ff.TableState.OK_PRECONDITION
         return 1 if impossible_shot else 0

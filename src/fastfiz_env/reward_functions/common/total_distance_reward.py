@@ -29,7 +29,5 @@ class TotalDistanceReward(RewardFunction):
         """
         num_balls = num_balls_in_play(table_state)
         ball_positions = get_ball_positions(table_state)[1:num_balls]
-        total_distance = np.sum(
-            distances_to_closest_pocket(ball_positions, self.pockets)
-        )
+        total_distance = np.sum(distances_to_closest_pocket(ball_positions, self.pockets))
         return total_distance

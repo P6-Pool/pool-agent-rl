@@ -32,7 +32,5 @@ class TimeLimitInjectionWrapper(gym.Wrapper):
         elapsed_steps = get_wrapper_attr(self.env, gym.wrappers.TimeLimit, "_elapsed_steps")  # type: ignore
 
         # Inject the max_episode_steps attribute into the base environment.
-        inject_attribute_into_base_env(
-            self.env, "_max_episode_steps", max_episode_steps
-        )
+        inject_attribute_into_base_env(self.env, "_max_episode_steps", max_episode_steps)
         inject_attribute_into_base_env(self.env, "_elapsed_steps", elapsed_steps)

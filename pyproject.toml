@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "fastfiz-env"
+description = "Gymnasium environments for FastFiz pool simulator."
+readme = "README.md"
+requires-python = ">=3.10"
+dynamic = ["version"]
+dependencies = [
+    "fastfiz @ git+https://github.com/P6-Pool/fastfiz.git",
+    "gymnasium",
+    "numpy",
+    "vectormath",
+]
+
+[project.optional-dependencies]
+dev = [
+    "fastfiz_renderer @ git+https://github.com/P6-Pool/fastfiz-renderer.git",
+    "stable-baselines3",
+    "tqdm",
+    "rich",
+    "torch",
+    "tensorboard",
+    "optuna",
+]
+test = ["pytest", "mypy", "ruff"]
+all = [
+    # dev
+    "fastfiz_renderer @ git+https://github.com/P6-Pool/fastfiz-renderer.git",
+    "stable-baselines3",
+    "tqdm",
+    "rich",
+    "torch",
+    "tensorboard",
+    "optuna",
+    # test
+    "pytest",
+    "mypy",
+    "ruff",
+]
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning:tensorboard",
+    "ignore::UserWarning:gym",
+]
+
+[tool.mypy]
+ignore_missing_imports = true
+follow_imports = "silent"
+show_error_codes = true
+
+[tool.ruff]
+line-length = 127

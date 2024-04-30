@@ -5,10 +5,8 @@ from gymnasium import spaces
 
 from fastfiz_env.envs.utils import game_won, terminal_state
 from ..utils.fastfiz import (
-    shot_params_from_action,
     get_ball_positions,
     create_random_table_state,
-    get_ball_velocity,
     normalize_ball_positions,
     normalize_ball_velocity,
     is_pocketed_state,
@@ -28,9 +26,7 @@ class FramesFastFiz(gym.Env):
     TOTAL_BALLS = 16  # Including the cue ball
     num_balls = 2
 
-    def __init__(
-        self, reward_function: RewardFunction = DefaultReward, num_balls: int = 16
-    ) -> None:
+    def __init__(self, reward_function: RewardFunction = DefaultReward, num_balls: int = 16) -> None:
         super().__init__()
         if num_balls < 2:
             warnings.warn(
@@ -47,15 +43,11 @@ class FramesFastFiz(gym.Env):
 
     def _max_episode_steps(self):
         if self.get_wrapper_attr("_time_limit_max_episode_steps") is not None:
-            self.max_episode_steps = self.get_wrapper_attr(
-                "_time_limit_max_episode_steps"
-            )
+            self.max_episode_steps = self.get_wrapper_attr("_time_limit_max_episode_steps")
             print(f"Setting max episode steps to {self.max_episode_steps}")
             self.reward.max_episode_steps = self.max_episode_steps
 
-    def reset(
-        self, *, seed: Optional[int] = None, options: Optional[dict] = None
-    ) -> tuple[np.ndarray, dict]:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> tuple[np.ndarray, dict]:
         """
         Reset the environment to its initial state.
         """
@@ -137,18 +129,7 @@ class FramesFastFiz(gym.Env):
 
         All values are in the range `[0, TABLE_WIDTH]` and `[0, TABLE_LENGTH]`.
         """
-        table = self.table_state.getTable()
-
         lower = np.full((self.TOTAL_BALLS, 4), [-1, -1, -1, 0])
-        # upper = np.full(
-        #     (self.TOTAL_BALLS, 4),
-        #     [
-        #         table.TABLE_WIDTH,
-        #         table.TABLE_LENGTH,
-        #         self.table_state.MAX_VELOCITY * 1.580,
-        #         1,
-        #     ],
-        # )
         upper = np.full(
             (self.TOTAL_BALLS, 4),
             [1, 1, 1, 1],
@@ -187,14 +168,9 @@ class FramesFastFiz(gym.Env):
         """
         Check if the shot is possible.
         """
-        return (
-            self.table_state.isPhysicallyPossible(shot_params)
-            == ff.TableState.OK_PRECONDITION
-        )
+        return self.table_state.isPhysicallyPossible(shot_params) == ff.TableState.OK_PRECONDITION
 
-    def _compute_observation(
-        self, prev_table_state: ff.TableState, shot: Optional[ff.Shot]
-    ) -> np.ndarray:
+    def _compute_observation(self, prev_table_state: ff.TableState, shot: Optional[ff.Shot]) -> np.ndarray:
         return self.compute_observation(prev_table_state, self.table_state, shot)
 
     @classmethod
@@ -236,8 +212,7 @@ class FramesFastFiz(gym.Env):
                 pocketed = is_pocketed_state(gb.state)
                 frames_seq[frame][gb.number] = [
                     *normalize_ball_positions((gb.position.x, gb.position.y)),  # type: ignore
-                    normalize_ball_velocity(np.hypot(gb.velocity.x, gb.velocity.y)) * 2
-                    - 1,
+                    normalize_ball_velocity(np.hypot(gb.velocity.x, gb.velocity.y)) * 2 - 1,
                     pocketed,
                 ]
         return frames_seq

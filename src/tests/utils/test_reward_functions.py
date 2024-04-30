@@ -1,8 +1,21 @@
 import unittest
 import fastfiz as ff
-from fastfiz_env.reward_functions.common import *
+from fastfiz_env.reward_functions.common import (
+    ConstantReward,
+    StepPocketedReward,
+    GameWonReward,
+    CueBallPocketedReward,
+    CueBallNotMovedReward,
+    ImpossibleShotReward,
+    DeltaBestTotalDistanceReward,
+    TotalDistanceReward,
+    ConstantWeightBalls,
+    ConstantWeightMaxSteps,
+    NegativeConstantWeightMaxSteps,
+    ConstantWeightNumBalls,
+    ConstantWeightCurrentStep,
+)
 from fastfiz_env.reward_functions import CombinedReward
-from fastfiz_env.reward_functions.reward_function import Weight
 from fastfiz_env.utils.fastfiz import create_table_state
 import numpy as np
 
@@ -14,9 +27,7 @@ def weight_fn(num_balls: int, current_step: int, max_steps: int | None) -> float
 
 
 class TestRewardFunctions(unittest.TestCase):
-    possible_shot_action = np.array(
-        [0, 0, ff.TableState.MAX_THETA - 0.001, 0, 0], dtype=np.float64
-    )
+    possible_shot_action = np.array([0, 0, ff.TableState.MAX_THETA - 0.001, 0, 0], dtype=np.float64)
     impossible_shot_action = np.array([0, 0, 0, 0, 0], dtype=np.float64)
     empty_action = np.array([], dtype=np.float64)
 
@@ -27,12 +38,8 @@ class TestRewardFunctions(unittest.TestCase):
         reward = StepPocketedReward()
         reward.reset(table_state)
 
-        self.assertEqual(
-            reward.get_reward(table_state, table_state, self.empty_action), 0
-        )
-        self.assertEqual(
-            reward.get_reward(table_state, table_state_pocketed, self.empty_action), 1
-        )
+        self.assertEqual(reward.get_reward(table_state, table_state, self.empty_action), 0)
+        self.assertEqual(reward.get_reward(table_state, table_state_pocketed, self.empty_action), 1)
 
     def test_game_won_reward(self):
         table_state = create_table_state(3)
@@ -45,26 +52,17 @@ class TestRewardFunctions(unittest.TestCase):
 
         reward = GameWonReward()
         reward.reset(table_state)
-        self.assertEqual(
-            reward.get_reward(table_state, table_state, self.empty_action), 0
-        )
-        self.assertEqual(
-            reward.get_reward(table_state, table_state_pocketed, self.empty_action), 1
-        )
+        self.assertEqual(reward.get_reward(table_state, table_state, self.empty_action), 0)
+        self.assertEqual(reward.get_reward(table_state, table_state_pocketed, self.empty_action), 1)
 
     def test_constant_reward(self):
-
         table_state = create_table_state(2)
 
         reward = ConstantReward(weight=weight_fn, max_episode_steps=10)
         reward.reset(table_state)
 
-        self.assertEqual(
-            reward.get_reward(table_state, table_state, self.empty_action), 2 + 1 + 10
-        )
-        self.assertEqual(
-            reward.get_reward(table_state, table_state, self.empty_action), 2 + 2 + 10
-        )
+        self.assertEqual(reward.get_reward(table_state, table_state, self.empty_action), 2 + 1 + 10)
+        self.assertEqual(reward.get_reward(table_state, table_state, self.empty_action), 2 + 2 + 10)
 
     def test_cue_ball_pocketed_reward(self):
         table_state = create_table_state(2)
@@ -74,12 +72,8 @@ class TestRewardFunctions(unittest.TestCase):
         reward = CueBallPocketedReward()
         reward.reset(table_state)
 
-        self.assertEqual(
-            reward.get_reward(table_state, table_state, self.empty_action), 0
-        )
-        self.assertEqual(
-            reward.get_reward(table_state, table_state_pocketed, self.empty_action), 1
-        )
+        self.assertEqual(reward.get_reward(table_state, table_state, self.empty_action), 0)
+        self.assertEqual(reward.get_reward(table_state, table_state_pocketed, self.empty_action), 1)
 
     def test_cue_ball_not_moved_reward(self):
         table_state = create_table_state(2)
@@ -89,27 +83,17 @@ class TestRewardFunctions(unittest.TestCase):
         reward = CueBallNotMovedReward()
         reward.reset(table_state)
 
-        self.assertEqual(
-            reward.get_reward(table_state, table_state, self.empty_action), 1
-        )
-        self.assertEqual(
-            reward.get_reward(table_state, table_state_moved, self.empty_action), 0
-        )
+        self.assertEqual(reward.get_reward(table_state, table_state, self.empty_action), 1)
+        self.assertEqual(reward.get_reward(table_state, table_state_moved, self.empty_action), 0)
 
     def test_impossible_shot_reward(self):
         table_state = create_table_state(2)
         reward = ImpossibleShotReward()
         reward.reset(table_state)
 
-        self.assertEqual(
-            reward.get_reward(table_state, table_state, self.possible_shot_action), 0
-        )
-        self.assertEqual(
-            reward.get_reward(table_state, table_state, self.impossible_shot_action), 1
-        )
-        self.assertEqual(
-            reward.get_reward(table_state, table_state, self.empty_action), 1
-        )
+        self.assertEqual(reward.get_reward(table_state, table_state, self.possible_shot_action), 0)
+        self.assertEqual(reward.get_reward(table_state, table_state, self.impossible_shot_action), 1)
+        self.assertEqual(reward.get_reward(table_state, table_state, self.empty_action), 1)
 
     def test_delta_best_total_distance_reward(self):
         # Pocket: [0.,  1.118]
@@ -121,9 +105,7 @@ class TestRewardFunctions(unittest.TestCase):
         table_state = create_table_state(2)
         table_state.setBall(1, ff.Ball.STATIONARY, ff.Point(0.25, 1.118))
 
-        self.assertEqual(
-            reward.get_reward(prev_table_state, prev_table_state, self.empty_action), 0
-        )
+        self.assertEqual(reward.get_reward(prev_table_state, prev_table_state, self.empty_action), 0)
         self.assertEqual(
             reward.get_reward(prev_table_state, table_state, self.empty_action),
             0.25,
@@ -173,9 +155,7 @@ class TestRewardFunctions(unittest.TestCase):
         table_state.setBall(1, ff.Ball.STATIONARY, ff.Point(0.25, 1.118))
 
         self.assertEqual(
-            reward_function.get_reward(
-                prev_table_state, table_state, self.empty_action
-            ),
+            reward_function.get_reward(prev_table_state, table_state, self.empty_action),
             3.3,
         )
 
@@ -184,22 +164,16 @@ class TestRewardFunctions(unittest.TestCase):
             ImpossibleShotReward(10, short_circuit=False),
             ConstantReward(5),
         ]
-        reward_function = CombinedReward(
-            reward_functions=rewards_functions, short_circuit=True
-        )
+        reward_function = CombinedReward(reward_functions=rewards_functions, short_circuit=True)
         table_state = create_table_state(2)
         reward_function.reset(table_state)
 
         self.assertEqual(
-            reward_function.get_reward(
-                table_state, table_state, self.possible_shot_action
-            ),
+            reward_function.get_reward(table_state, table_state, self.possible_shot_action),
             5,
         )
         self.assertEqual(
-            reward_function.get_reward(
-                table_state, table_state, self.impossible_shot_action
-            ),
+            reward_function.get_reward(table_state, table_state, self.impossible_shot_action),
             15,
         )
 
@@ -208,30 +182,22 @@ class TestRewardFunctions(unittest.TestCase):
             ImpossibleShotReward(10, short_circuit=True),
             ConstantReward(5),
         ]
-        reward_function = CombinedReward(
-            reward_functions=rewards_functions, short_circuit=True
-        )
+        reward_function = CombinedReward(reward_functions=rewards_functions, short_circuit=True)
         table_state = create_table_state(2)
         reward_function.reset(table_state)
 
         self.assertEqual(
-            reward_function.get_reward(
-                table_state, table_state, self.possible_shot_action
-            ),
+            reward_function.get_reward(table_state, table_state, self.possible_shot_action),
             5,
         )
         self.assertEqual(
-            reward_function.get_reward(
-                table_state, table_state, self.impossible_shot_action
-            ),
+            reward_function.get_reward(table_state, table_state, self.impossible_shot_action),
             10,
         )
 
     def test_weights(self):
         table_state = create_table_state(3)
-        reward = ConstantReward(
-            weight=NegativeConstantWeightMaxSteps, max_episode_steps=10
-        )
+        reward = ConstantReward(weight=NegativeConstantWeightMaxSteps, max_episode_steps=10)
         reward.reset(table_state)
 
         self.assertEqual(

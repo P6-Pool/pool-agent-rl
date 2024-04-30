@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dynamic = ["version"]
 dependencies = [
-    "fastfiz @ git+https://github.com/P6-Pool/fastfiz.git@2af8aed22bec1faeb5ac92b98b0751a0023f3fb7",
+    "fastfiz @ git+https://github.com/P6-Pool/fastfiz.git",
     "gymnasium",
     "numpy",
     "vectormath",
@@ -18,7 +18,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "fastfiz_renderer @ git+https://github.com/P6-Pool/fastfiz-renderer.git@4ffb95e8683b30975b1d8f5dd483d56599e1e062",
+    "fastfiz_renderer @ git+https://github.com/P6-Pool/fastfiz-renderer.git",
     "stable-baselines3",
     "tqdm",
     "rich",
@@ -29,7 +29,7 @@ dev = [
 test = ["pytest", "mypy", "ruff"]
 all = [
     # dev
-    "fastfiz_renderer @ git+https://github.com/P6-Pool/fastfiz-renderer.git@4ffb95e8683b30975b1d8f5dd483d56599e1e062",
+    "fastfiz_renderer @ git+https://github.com/P6-Pool/fastfiz-renderer.git",
     "stable-baselines3",
     "tqdm",
     "rich",

@@ -32,6 +32,6 @@ def sph2deg(r: float, el: float, az: float) -> tuple[float, float, float]:
     Returns:
         tuple[float, float, float]: A tuple containing radius (magnitude), elevation angle (theta, in degrees), and azimuth angle (phi, in degrees).
     """
-    el: float = np.rad2deg(el)
-    az: float = np.rad2deg(az)
-    return r, el, az
+    el_deg: float = np.rad2deg(el)
+    az_deg: float = np.rad2deg(az)
+    return r, el_deg, az_deg

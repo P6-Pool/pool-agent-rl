@@ -58,7 +58,7 @@ class SimpleFastFiz(gym.Env):
         if self.max_episode_steps is None or self.elapsed_steps is None:
             self._get_time_limit_attrs()
 
-        self.table_state = create_random_table_state(self.num_balls)
+        self.table_state = create_random_table_state(self.num_balls, seed=seed)
         self.reward.reset(self.table_state)
         self._prev_pocketed = 0
 

@@ -5,9 +5,19 @@ import os
 from glob import glob
 import pandas as pd
 import numpy as np
-
+from scipy.interpolate import griddata
 from matplotlib import cbook, cm
 from matplotlib.colors import LightSource
+import re
+
+# Setup for Latex rendering
+plt.rcParams.update(
+    {
+        "text.usetex": True,
+        "font.family": "serif",  # Use serif font
+        "font.serif": ["Computer Modern Roman"],  # Use Computer Modern Roman font
+    }
+)
 
 
 def split_agent_name(row):
@@ -19,7 +29,7 @@ def split_agent_name(row):
     return row
 
 
-def plot_benchmarks(log_dir, show=True, save_dir=".") -> None:
+def plot_benchmarks(log_dir, show=True, z_axis: str = "offBreakWin", save_dir=".") -> None:
     """
     Plots a 3D graph.
     With the x-axis as the shot depth, y-axis as the velocity samples, and z-axis as the win rate.
@@ -36,48 +46,77 @@ def plot_benchmarks(log_dir, show=True, save_dir=".") -> None:
     """
 
     df = pd.read_csv(log_dir, delimiter=",")
-    print(df.head())
     df = df.apply(split_agent_name, axis=1)
-    print(df.head())
 
     # Custom hillshading in a 3D surface plot
 
     # Set up plot
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection="3d")
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(10, 6))
 
+    df["offBreakWinTime"] = df.apply(lambda row: row["offBreakWin"] / row["avgTimePerGame"], axis=1)
+
+    print(df.head())
     # Create data
     x = df["vel_samples"]
     y = df["mc_samples"]
-    z = df["offBreakWin"]
-
+    z = df[z_axis]
     # Plot data
-    ax.scatter(x, y, z, c="r", marker="o")
+    # ax.scatter(x, y, z, c="r", marker="o")
+    # ax.plot_trisurf(x, y, z, cmap="viridis", edgecolor="none")
 
-    # Customize ticks
-    ax.set_xticks([2, 4, 6, 8, 10])
-    ax.set_yticks([10, 20, 30, 40, 50])
-    ax.set_zticks([0, 25, 50, 75, 100])
+    # xi = np.linspace(min(x), max(x), 100)
+    # yi = np.linspace(min(y), max(y), 100)
+    # zi = griddata((x, y), z, (xi[None, :], yi[:, None]), method="cubic")
+
+    surf = ax.plot_trisurf(x, y, z, cmap="viridis", edgecolor="none")
+    # surf = ax.plot_trisurf(x, y, z, cmap="viridis", edgecolor="none", subdivide=12)
 
     # Customize label
     ax.set_xlabel("Velocity Samples")
     ax.set_ylabel("Monte-Carlo Samples")
-    ax.set_zlabel("Off Break Win")
 
-    plt.show()
+    z_label = re.sub(r"(?<!^)(?=[A-Z])", " ", z_axis).title()
+
+    ax.set_zlabel(z_label)
+
+    # Color fix
+    ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+    ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+    ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+    ax.xaxis._axinfo["grid"]["color"] = (0, 0, 0, 0.1)
+    ax.yaxis._axinfo["grid"]["color"] = (0, 0, 0, 0.1)
+    ax.zaxis._axinfo["grid"]["color"] = (0, 0, 0, 0.1)
+
+    ax.view_init(30, -45)
+
+    cbar = fig.colorbar(surf, shrink=0.5, aspect=10)
+    # move cbar more to the right
+    cbar.ax.yaxis.set_ticks_position("right")
+    pos = cbar.ax.get_position()
+    cbar.ax.set_position([pos.x0 + 0.04, pos.y0, pos.width, pos.height])
+
+    # Remove whitespace
+
+    os.makedirs(save_dir, exist_ok=True)
+    save_path = os.path.join(save_dir, f"plot-{z_label.replace(' ', '_').lower()}.pdf")
+    print(f"Saving plot to {save_path}")
+    plt.savefig(save_path, format="pdf")
+    if show:
+        plt.show()
 
 
 def main():
     parser = argparse.ArgumentParser(description="Plot TensorBoard logs.")
     parser.add_argument("log_dir", type=str, help="Path(s) to the directory containing TensorBoard logs")
     parser.add_argument("-s", "--show", action="store_true", help="Show the plot")
+    parser.add_argument("-z", "--z-axis", type=str, help="The z-axis to plot", default="offBreakWin")
     args = parser.parse_args()
 
-    save_dir = "plots/"
+    save_dir = "plots/benchmarks/"
 
-    name = "asd-1-10-55-100"
-
-    plot_benchmarks(args.log_dir, args.show, save_dir=save_dir)
+    plot_benchmarks(args.log_dir, args.show, z_axis=args.z_axis, save_dir=save_dir)
 
 
 if __name__ == "__main__":

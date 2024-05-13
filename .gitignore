@@ -97,8 +97,12 @@ venv.bak/
 
 # # # #
 
-*logs*/*
-*models*/*
 **/*.pdf
 **/*.csv
 **/*.ipynb
+**/*.zip
+**/*.npz
+**/*.pkl
+**/*logs*/
+**/*models*/
+.vscode/

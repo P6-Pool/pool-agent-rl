@@ -1,9 +1,11 @@
-import numpy as np
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
 import argparse
+import os
 
-# Setup for Latex rendering
+# Setup for LaTeX rendering
 plt.rcParams.update(
     {
         "text.usetex": True,
@@ -11,6 +13,35 @@ plt.rcParams.update(
         "font.serif": ["Computer Modern Roman"],  # Use Computer Modern Roman font
     }
 )
+
+
+def get_colors(log_dirs, offset=0.2):
+    color_map = {}
+
+    prefixes = []
+    policies = []
+    for log_dir in log_dirs:
+        log_dir = log_dir if log_dir.endswith("/") else log_dir + "/"
+        prefix = log_dir.split("/")[-2].split("-")[0]
+        policy = log_dir.split("/")[-2].split("_")[-1]
+        if prefix not in prefixes:
+            prefixes.append(prefix)
+        if policy not in policies:
+            policies.append(policy)
+
+    n_colors = len(prefixes)
+    n_shades = len(policies)
+    color_starts = np.linspace(0, 3, n_colors + 1)[:-1] * 1.3
+
+    for i, prefix in enumerate(prefixes):
+        colors = sns.cubehelix_palette(
+            start=color_starts[i], rot=-0.15, dark=0.3, light=0.7, n_colors=n_shades, hue=1.8, gamma=1.2, reverse=True
+        )
+
+        color_map[prefix] = {}
+        for j, policy in enumerate(policies):
+            color_map[prefix][policy] = colors[j]
+    return color_map
 
 
 def smooth(scalars: list[float] | np.ndarray, weight: float) -> list[float]:
@@ -34,7 +65,7 @@ def smooth(scalars: list[float] | np.ndarray, weight: float) -> list[float]:
     return smoothed
 
 
-def plot_tensorboard_logs(log_dirs, tags_to_plot, smooth_weight=0.5, show=True) -> None:
+def plot_tensorboard_logs(log_dirs: list[str], tags_to_plot, smooth_weight=0.5, show=True, plot_dir=".") -> None:
     """
     Plot TensorBoard logs for specified tags with optional smoothing.
 
@@ -48,10 +79,7 @@ def plot_tensorboard_logs(log_dirs, tags_to_plot, smooth_weight=0.5, show=True) 
     - None
     """
 
-    # Determine colors for lines
-    # colors = plt.cm.tab10(np.linspace(0, 1, len(tags_to_plot)))  # type: ignore
-    cmap = plt.get_cmap("tab10")
-    colors = [cmap(int(i * 3.25 % 10)) for i in np.linspace(0, 1, len(tags_to_plot) * len(log_dirs))]
+    colors = get_colors(log_dirs)
 
     line_width = 0.5
 
@@ -62,7 +90,8 @@ def plot_tensorboard_logs(log_dirs, tags_to_plot, smooth_weight=0.5, show=True) 
 
         # Get all scalar events
         scalar_tags = event_acc.Tags()["scalars"]
-
+        if log_dir.endswith("/"):
+            log_dir = log_dir.rsplit("/", 1)[0]
         graph_name = log_dir.split("/")[-1]
         plot_name = ", ".join(tags_to_plot)
 
@@ -72,43 +101,69 @@ def plot_tensorboard_logs(log_dirs, tags_to_plot, smooth_weight=0.5, show=True) 
 
         # Plot specified tags
         for i, tag in enumerate(tags_to_plot):
-            color = colors[j * len(tags_to_plot) + i]
-            if tag in scalar_tags:
-                events = event_acc.Scalars(tag)
-                steps = np.array([event.step for event in events])
-                values = np.array([event.value for event in events])
+            # color = colors[j * len(tags_to_plot) + i]
 
-                # Custom action space labels
-                def action_space(n: int):
-                    return r"$\mathcal{A}_" + f"{n}" + r"$"
+            # get color by n-balls and policy
+            prefix = log_dir.split("/")[-1].split("-")[0]
+            policy = log_dir.split("/")[-1].split("_")[-1]
+            color = colors[prefix][policy]
+            if tag == "rollout/ep_rew_mean" and "reg" in policy:
+                color = colors[prefix]["random-policy"]
 
-                label = graph_name.replace("_", ", ").replace("-", " ")
-                if "cart" in graph_name.lower():
-                    label = label.split(", ")[0] + f", {action_space(2)}"
-                elif "reg" in graph_name.lower():
-                    label = label.split(", ")[0] + f", {action_space(1)}"
-                elif "random" in graph_name.lower():
-                    label = label.split(", ")[0] + ", random policy"
+            if tag not in scalar_tags:
+                print(f"Tag '{tag}' not found in '{log_dir}'.")
+                continue
+            events = event_acc.Scalars(tag)
+            steps = np.array([event.step for event in events])
+            values = np.array([event.value for event in events])
 
-                if smooth_weight > 0:
-                    # Apply moving average smoothing
-                    smoothed_values = smooth(values, smooth_weight)
+            # Custom action space labels
+            def action_space(n: int):
+                return r"$\mathcal{A}_" + f"{n}" + r"$"
 
-                    # Plot smoothed data with custom color
-                    plt.plot(
-                        steps,
-                        smoothed_values,
-                        label=label + f" ({smooth_weight} EMA)",
-                        color=color,
-                        linewidth=line_width,
-                    )
+            label = graph_name.replace("_", ", ").replace("-", " ")
+            if "cart" in graph_name.lower():
+                label = label.split(", ")[0] + f", {action_space(2)}"
+            elif "reg" in graph_name.lower():
+                label = label.split(", ")[0] + f", {action_space(1)}"
+            elif "random" in graph_name.lower():
+                label = label.split(", ")[0] + ", random policy"
 
-                    # Plot original data with lower opacity using the same color
-                    plt.plot(steps, values, alpha=0.25, color=color, label=None, linewidth=line_width)
-                else:
-                    plt.plot(steps, values, color=color, label=label, linewidth=line_width)
+            if smooth_weight > 0:
+                # Apply moving average smoothing
+                smoothed_values = smooth(values, smooth_weight)
+
+                # Plot original data with lower opacity using the same color
+                plt.plot(
+                    steps,
+                    values,
+                    alpha=0.10,
+                    color=color,
+                    label=None,
+                    linewidth=line_width,
+                )
+
+                # Plot smoothed data with custom color
+                plt.plot(
+                    steps,
+                    smoothed_values,
+                    # label=label + f" ({smooth_weight} EMA)",
+                    label=label,
+                    color=color,
+                    linewidth=line_width,
+                )
+
             else:
-                print(f"Tag '{tag}' not found in TensorBoard logs.")
+                plt.plot(
+                    steps,
+                    values,
+                    color=color,
+                    label=label,
+                    linewidth=line_width,
+                )
+
+            if tag == "rollout/ep_rew_mean":
+                plt.ylim(bottom=-1)
 
     plt.grid(True, alpha=0.1)
     plt.xlabel("Step")
@@ -122,10 +177,14 @@ def plot_tensorboard_logs(log_dirs, tags_to_plot, smooth_weight=0.5, show=True) 
         .title()
     )
     plt.legend(fontsize="small")
+    plt.title(None)
+    plt.subplots_adjust(top=0.95)
 
     plot_name = "plot-" + "-".join(tags_to_plot).replace("/", "_") + ".pdf"
-    plt.savefig(plot_name)
-    print(f"Plot saved as '{plot_name}'")
+    plot_path = os.path.join(plot_dir, plot_name)
+    os.makedirs(plot_dir, exist_ok=True)
+    plt.savefig(plot_path)
+    print(f"Plot saved as '{plot_path}'")
     if show:
         plt.show()
     plt.clf()
@@ -135,9 +194,12 @@ def main():
     parser = argparse.ArgumentParser(description="Plot TensorBoard logs.")
     parser.add_argument("log_dirs", nargs="+", help="Path(s) to the directory containing TensorBoard logs")
     parser.add_argument("-t", "--tags", nargs="+", help="Scalar tags to plot")
-    parser.add_argument("-s", "--smoothing", type=float, default=0, help="Window size for moving average smoothing")
+    parser.add_argument("-w", "--ema-weight", type=float, default=0, help="Window size for moving average smoothing")
     parser.add_argument("-a", "--all", action="store_true", help="Plot all tags in the log directory")
+    parser.add_argument("-s", "--show", action="store_true", help="Display the plots")
     args = parser.parse_args()
+
+    plot_dir = "plots/"
 
     if args.all:
         tags_to_plot = [
@@ -148,12 +210,12 @@ def main():
             "rollout/ep_len_mean",
         ]
         for tag in tags_to_plot:
-            smoothing = 0
-            if tag.startswith("rollout"):
-                smoothing = args.smoothing or 0.5
-            plot_tensorboard_logs(args.log_dirs, [tag], smooth_weight=smoothing, show=False)
+            # smoothing = 0
+            # if tag.startswith("rollout"):
+            #     smoothing = args.ema_weight or 0.75
+            plot_tensorboard_logs(args.log_dirs, [tag], smooth_weight=args.ema_weight, show=args.show, plot_dir=plot_dir)
     else:
-        plot_tensorboard_logs(args.log_dirs, args.tags, smooth_weight=args.smoothing)
+        plot_tensorboard_logs(args.log_dirs, args.tags, smooth_weight=args.ema_weight, show=args.show, plot_dir=plot_dir)
 
 
 if __name__ == "__main__":

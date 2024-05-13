@@ -76,10 +76,7 @@ class SimpleFastFiz(gym.Env):
         shot_params = ff.ShotParams(*action)
 
         if self._possible_shot(shot_params):
-            try:
-                self.table_state.executeShot(shot_params)
-            except Exception:
-                pass
+            self.table_state.executeShot(shot_params)
 
         observation = self._get_observation()
         reward = self.reward.get_reward(prev_table_state, self.table_state, action)

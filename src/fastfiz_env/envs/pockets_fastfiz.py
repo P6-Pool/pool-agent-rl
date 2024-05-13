@@ -80,10 +80,7 @@ class PocketsFastFiz(gym.Env):
         shot_params = ff.ShotParams(*action)
 
         if self._possible_shot(shot_params):
-            try:
-                self.table_state.executeShot(shot_params)
-            except Exception:
-                pass
+            self.table_state.executeShot(shot_params, verbose=True)
 
         observation = self._get_observation()
         reward = self.reward.get_reward(prev_table_state, self.table_state, action)
@@ -106,11 +103,11 @@ class PocketsFastFiz(gym.Env):
             if ball.isPocketed():
                 pocket = ball_state_to_pocket(ball.getState())
                 pocket_pos = get_pocket_center(pocket)
-                observation[i] = [*pocket_pos, 0]
+                observation[i] = [*pocket_pos, 1]
             elif ball.isInPlay():
-                observation[i] = [*ball_pos, 1]
+                observation[i] = [*ball_pos, 0]
             else:
-                observation[i] = [0, 0, 0]
+                observation[i] = [0, 0, 1]
 
         return np.array(observation)
 

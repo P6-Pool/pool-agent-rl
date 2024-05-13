@@ -50,6 +50,8 @@ def train(
         n_envs=n_envs,
     )
 
+    # env = VecCheckNan(env, raise_exception=True)
+
     hyperparams = params_to_kwargs(**params) if params else {}
     print(hyperparams)
     model_name = get_model_name(env_id, num_balls, action_space_id=action_space_id)
@@ -97,8 +99,8 @@ def train(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env", type=str, required=True)
-    parser.add_argument("-b", "--num_balls", type=int, required=True)
+    parser.add_argument("--env", type=str, default="PocketsFastFiz-v0")
+    parser.add_argument("-b", "--num_balls", type=int, default=2)
     parser.add_argument("-m", "--max_episode_steps", type=int, default=20)
     parser.add_argument("-n", "--n_time_steps", type=int, default=1_000_000)
     parser.add_argument(
@@ -125,7 +127,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-a", "--action_id", type=lambda a: ActionSpaces[a], choices=list(ActionSpaces), default=ActionSpaces.VECTOR_3D
+        "-a", "--action_id", type=lambda a: ActionSpaces[a], choices=list(ActionSpaces), default=ActionSpaces.OFFSET_NORM_5D
     )
 
     args = parser.parse_args()

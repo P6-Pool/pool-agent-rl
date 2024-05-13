@@ -99,3 +99,6 @@ venv.bak/
 
 *logs*/*
 *models*/*
+**/*.pdf
+**/*.csv
+**/*.ipynb

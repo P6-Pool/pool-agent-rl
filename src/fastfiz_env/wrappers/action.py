@@ -72,8 +72,8 @@ class FastFizActionWrapper(ActionWrapper):
     MAX_PHI = 360 - 0.001
     MIN_VELOCITY = 0
     MAX_VELOCITY = 10 - 0.001
-    MIN_OFFSET = -28 + 0.001
-    MAX_OFFSET = 28 - 0.001
+    MIN_OFFSET = -28 + 1
+    MAX_OFFSET = 28 - 1
     SPACES = {
         "VECTOR_2D": spaces.Box(
             low=np.array([-1, -1]),

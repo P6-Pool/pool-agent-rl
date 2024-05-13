@@ -52,7 +52,7 @@ def train(
 
     hyperparams = params_to_kwargs(**params) if params else {}
     print(hyperparams)
-    model_name = get_model_name(env_id, num_balls, action_space_id)
+    model_name = get_model_name(env_id, num_balls, action_space_id=action_space_id)
 
     if model_dir is None:
         model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=logs_path, **hyperparams)
@@ -124,7 +124,9 @@ if __name__ == "__main__":
         help="Path to hyperparameters file (file must have key 'params' with dict of hyperparameters",
     )
 
-    parser.add_argument("-a", "--action_id", type=ActionSpaces, choices=list(ActionSpaces), default=ActionSpaces.VECTOR_3D)
+    parser.add_argument(
+        "-a", "--action_id", type=lambda a: ActionSpaces[a], choices=list(ActionSpaces), default=ActionSpaces.VECTOR_3D
+    )
 
     args = parser.parse_args()
 

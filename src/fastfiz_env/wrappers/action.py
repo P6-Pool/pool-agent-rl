@@ -61,6 +61,9 @@ class ActionSpaces(Enum):
     - velocity: The power of the shot (in m/s).
     """
 
+    def __str__(self):
+        return self.name
+
 
 class FastFizActionWrapper(ActionWrapper):
     MIN_THETA = 0

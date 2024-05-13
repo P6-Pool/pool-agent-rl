@@ -109,18 +109,16 @@ class PocketsFastFiz(gym.Env):
             else:
                 observation[i] = [0, 0, 0]
 
-        # for i, pocket_center in enumerate(self._pocket_centers):
-        #     observation[self.TOTAL_BALLS + i] = pocket_center
-
         return np.array(observation)
 
     def _observation_space(self) -> spaces.Box:
         """
         Get the observation space of the environment.
 
-        The observation space is a 16-dimensional box with the position of each ball:
+        The observation space is a 16x3-dimensional box with the position and ball state of each ball:
         - x: The x-coordinate of the ball.
         - y: The y-coordinate of the ball.
+        - p: Pocket state of the ball. 1  if the ball is pocketed, 0 otherwise.
 
         All values are in the range `[-1, 1]`.
         """
@@ -132,12 +130,7 @@ class PocketsFastFiz(gym.Env):
         """
         Get the action space of the environment.
 
-        The action space is a 3-dimensional box with the following parameters:
-        - theta: The angle of the shot.
-        - phi: The angle of the shot.
-        - velocity: The velocity of the shot.
-
-        All values are in the range `[-1, 1]`.
+        The action space is a 3-dimensional box with the following parameters. All values are in the range `[-1, 1]`.
         """
         lower = np.array([-1, -1, -1])
         upper = np.array([1, 1, 1])

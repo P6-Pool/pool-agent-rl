@@ -2,7 +2,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from stable_baselines3.common.env_util import make_vec_env
 from fastfiz_env.reward_functions.default_reward import DefaultReward
-from fastfiz_env.wrappers.action import ActionSpaces, FastFizActionWrapper
+from fastfiz_env.wrappers.action import ActionSpaces
 import fastfiz_env
 
 

@@ -16,7 +16,7 @@ from typing import Optional
 from ..reward_functions import RewardFunction, DefaultReward
 
 
-class SimpleFastFiz(gym.Env):
+class FastFiz(gym.Env):
     """FastFiz environment for using different action spaces."""
 
     TOTAL_BALLS = 16

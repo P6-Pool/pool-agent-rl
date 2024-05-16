@@ -26,7 +26,7 @@ Use the environment for training a reinforcement learning agent:
 from stable_baselines3 import PPO
 from fastfiz_env import DefaultReward, make
 
-env = make("SimpleFastFiz-v0", reward_function=DefaultReward, num_balls=2)
+env = make("FastFiz-v0", reward_function=DefaultReward, num_balls=2)
 
 model = PPO("MlpPolicy", env)
 

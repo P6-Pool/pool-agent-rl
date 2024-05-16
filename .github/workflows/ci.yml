@@ -27,12 +27,12 @@ jobs:
 
             - name: Lint with Ruff
               run: |
-                  ruff check src/fastfiz_env
-                  ruff format src/fastfiz_env
+                  ruff check fastfiz_env
+                  ruff format fastfiz_env
 
             - name: Run MyPy
               run: |
-                  mypy src/fastfiz_env
+                  mypy fastfiz_env
 
             - name: Test with pytest
               run: |

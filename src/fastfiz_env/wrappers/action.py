@@ -69,8 +69,8 @@ class FastFizActionWrapper(ActionWrapper):
     MAX_PHI = 360 - 0.001
     MIN_VELOCITY = 0
     MAX_VELOCITY = 10 - 0.001
-    MIN_OFFSET = -15
-    MAX_OFFSET = 15
+    MIN_OFFSET = -28 + 8
+    MAX_OFFSET = 28 - 8
     SPACES = {
         "VECTOR_2D": spaces.Box(
             low=np.array([-1, -1]),
@@ -99,8 +99,8 @@ class FastFizActionWrapper(ActionWrapper):
             dtype=np.float32,
         ),
         "OUTPUT": spaces.Box(
-            low=np.array([-1, -1, 0, 0, 0]),
-            high=np.array([1, 1, 70, 360, 10]),
+            low=np.array([-28, -28, 0, 0, 0]),
+            high=np.array([28, 28, 70, 360, 10]),
             dtype=np.float32,
         ),
     }

@@ -59,5 +59,3 @@ from .fastfiz import (
     get_pocket_center,
     POCKETS,
 )
-
-from .renderer import GameBall

@@ -13,7 +13,6 @@ dependencies = [
     "fastfiz @ git+https://github.com/P6-Pool/fastfiz.git",
     "gymnasium",
     "numpy",
-    "vectormath",
 ]
 
 [project.optional-dependencies]

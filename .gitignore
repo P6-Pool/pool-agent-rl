@@ -1,7 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 __pycache__
-# **/__pycache__/
 *.py[cod]
 *$py.class
 
@@ -95,7 +94,12 @@ ENV/
 env.bak/
 venv.bak/
 
-# # # #
-
-*logs*/*
-*models*/*
+# Logs / models / plots / data
+*.pdf
+*.csv
+*.log
+*.ipynb
+*.zip
+*.npz
+*.pkl
+events.out.tfevents*

@@ -1,5 +1,5 @@
 import re
-from setuptools import setup
+from setuptools import setup, find_packages
 
 def get_version():
     with open("fastfiz_env/__init__.py", "r") as f:
@@ -10,6 +10,4 @@ def get_version():
     raise RuntimeError("Version not found in __init__.py")
 
 
-setup(
-    version=get_version(),
-)
+setup(version=get_version(), packages=find_packages())

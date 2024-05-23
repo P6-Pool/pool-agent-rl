@@ -1,29 +1,80 @@
 import argparse
 import json
 import os
-import gymnasium as gym
-from stable_baselines3.common.vec_env import VecEnv
-import optuna
 import time
+from typing import Any, Dict
+
+import gymnasium as gym
+import optuna
 import torch
-from fastfiz_env.make import make_callable_wrapped_env
-from fastfiz_env.reward_functions import DefaultReward, WinningReward, RewardFunction
+import torch.nn as nn
 from optuna.pruners import MedianPruner
 from optuna.samplers import TPESampler
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.env_util import make_vec_env
-from typing import Any, Dict
-from hyperparams import params_to_kwargs
+from stable_baselines3.common.vec_env import VecEnv
+
+from fastfiz_env.make import make_callable_wrapped_env
+from fastfiz_env.reward_functions import DefaultReward, RewardFunction, WinningReward
 
 
-# https://github.com/DLR-RM/rl-baselines3-zoo/blob/master/rl_zoo3/hyperparams_opt.py
+def params_to_kwargs(
+    *,
+    batch_size,
+    n_steps,
+    gamma,
+    learning_rate,
+    ent_coef,
+    clip_range,
+    n_epochs,
+    gae_lambda,
+    max_grad_norm,
+    vf_coef,
+    net_arch_type,
+    ortho_init,
+    activation_fn_name,
+    **kwargs,
+):
+    net_arch = {
+        "tiny": dict(pi=[64], vf=[64]),
+        "small": dict(pi=[64, 64], vf=[64, 64]),
+        "medium": dict(pi=[256, 256], vf=[256, 256]),
+    }[net_arch_type]
+
+    activation_fn = {
+        "tanh": nn.Tanh,
+        "relu": nn.ReLU,
+        "elu": nn.ELU,
+        "leaky_relu": nn.LeakyReLU,
+    }[activation_fn_name]
+
+    return {
+        "n_steps": n_steps,
+        "batch_size": batch_size,
+        "gamma": gamma,
+        "learning_rate": learning_rate,
+        "ent_coef": ent_coef,
+        "clip_range": clip_range,
+        "n_epochs": n_epochs,
+        "gae_lambda": gae_lambda,
+        "max_grad_norm": max_grad_norm,
+        "vf_coef": vf_coef,
+        # "sde_sample_freq": sde_sample_freq,
+        "policy_kwargs": {
+            # log_std_init=log_std_init,
+            "net_arch": net_arch,
+            "activation_fn": activation_fn,
+            "ortho_init": ortho_init,
+        },
+    }
+
+
 def sample_ppo_params(trial: optuna.Trial) -> Dict[str, Any]:
     """
     Sampler for PPO hyperparams.
 
-    :param trial:
-    :return:
+    See RL-Zoo3 for more: https://github.com/DLR-RM/rl-baselines3-zoo/blob/master/rl_zoo3/hyperparams_opt.py
     """
     batch_size = trial.suggest_categorical("batch_size", [8, 16, 32, 64, 128, 256, 512])
     n_steps = trial.suggest_categorical("n_steps", [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
@@ -74,7 +125,6 @@ def sample_ppo_params(trial: optuna.Trial) -> Dict[str, Any]:
     )
 
 
-# https://github.com/optuna/optuna-examples/blob/main/rl/sb3_simple.py
 class TrialEvalCallback(EvalCallback):
     """Callback used for evaluating and reporting a trial."""
 

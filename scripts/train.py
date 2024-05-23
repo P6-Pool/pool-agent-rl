@@ -2,22 +2,32 @@ import argparse
 import glob
 import json
 import os
-from fastfiz_env.make import make_callable_wrapped_env
-from fastfiz_env.reward_functions import RewardFunction
 from typing import Optional
+
+from optimize import params_to_kwargs
 from stable_baselines3 import PPO
-from fastfiz_env.reward_functions import DefaultReward, WinningReward
 from stable_baselines3.common.callbacks import (
+    CallbackList,
     CheckpointCallback,
     EvalCallback,
-    CallbackList,
 )
 from stable_baselines3.common.env_util import make_vec_env
+
+from fastfiz_env.make import make_callable_wrapped_env
+from fastfiz_env.reward_functions import DefaultReward, RewardFunction, WinningReward
 from fastfiz_env.wrappers.action import ActionSpaces
-from hyperparams import params_to_kwargs
 
 
 def get_latest_run_id(log_path: str, name: str) -> int:
+    """Get the latest run id for a given model name.
+
+    Args:
+        log_path (str): Path to the logs directory.
+        name (str): Name of the model.
+
+    Returns:
+        int: Id of the latest run.
+    """
     id = 0
     for path in glob.glob(os.path.join(log_path, name + "_[0-9]*")):
         run_id = path.split("_")[-1]
@@ -52,7 +62,7 @@ def train(
 
     hyperparams = params_to_kwargs(**params) if params else {}
     print(hyperparams)
-    model_name = get_model_name(env_id, num_balls, action_space_id)
+    model_name = get_model_name(env_id, num_balls, action_space_id=action_space_id)
 
     if model_dir is None:
         model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=logs_path, **hyperparams)
@@ -117,14 +127,15 @@ if __name__ == "__main__":
         default="DefaultReward",
     )
 
-    # Hyper params
     parser.add_argument(
         "--params",
         type=str,
         help="Path to hyperparameters file (file must have key 'params' with dict of hyperparameters",
     )
 
-    parser.add_argument("-a", "--action_id", type=ActionSpaces, choices=list(ActionSpaces), default=ActionSpaces.VECTOR_3D)
+    parser.add_argument(
+        "-a", "--action_id", type=lambda a: ActionSpaces[a], choices=list(ActionSpaces), default=ActionSpaces.VECTOR_3D
+    )
 
     args = parser.parse_args()
 

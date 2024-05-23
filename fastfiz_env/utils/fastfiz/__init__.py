@@ -26,7 +26,6 @@ __all__ = [
     "ball_state_to_pocket",
     "get_pocket_center",
     "POCKETS",
-    "GameBall",
 ]
 
 

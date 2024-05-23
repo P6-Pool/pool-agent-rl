@@ -1,6 +1,5 @@
 from .combined_reward import CombinedReward
 from .common import (
-    # ExponentialVelocityReward,
     BallsNotMovedReward,
     ConstantReward,
     ConstantWeight,

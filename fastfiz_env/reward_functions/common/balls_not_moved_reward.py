@@ -1,5 +1,5 @@
 from ...utils.fastfiz import any_ball_has_moved, get_ball_positions
-from .. import BinaryReward
+from ..binary_reward import BinaryReward
 
 
 class BallsNotMovedReward(BinaryReward):

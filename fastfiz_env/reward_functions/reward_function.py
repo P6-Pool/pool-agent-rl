@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
-import fastfiz as ff
-from typing import Union, Callable, Optional, TypeAlias
-import numpy as np
-from fastfiz_env.utils.fastfiz.fastfiz import num_balls_in_play
+from typing import Callable, Optional, TypeAlias, Union
 
+import fastfiz as ff
+import numpy as np
+
+from fastfiz_env.utils.fastfiz.fastfiz import num_balls_in_play
 
 Weight: TypeAlias = Union[float, Callable[[int, int, Optional[int]], float]]
 """

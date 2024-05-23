@@ -1,23 +1,25 @@
 import unittest
+
 import fastfiz as ff
+import numpy as np
+
+from fastfiz_env.reward_functions import CombinedReward
 from fastfiz_env.reward_functions.common import (
     ConstantReward,
-    StepPocketedReward,
-    GameWonReward,
-    CueBallPocketedReward,
-    CueBallNotMovedReward,
-    ImpossibleShotReward,
-    DeltaBestTotalDistanceReward,
-    TotalDistanceReward,
     ConstantWeightBalls,
-    ConstantWeightMaxSteps,
-    NegativeConstantWeightMaxSteps,
-    ConstantWeightNumBalls,
     ConstantWeightCurrentStep,
+    ConstantWeightMaxSteps,
+    ConstantWeightNumBalls,
+    CueBallNotMovedReward,
+    CueBallPocketedReward,
+    DeltaBestTotalDistanceReward,
+    GameWonReward,
+    ImpossibleShotReward,
+    NegativeConstantWeightMaxSteps,
+    StepPocketedReward,
+    TotalDistanceReward,
 )
-from fastfiz_env.reward_functions import CombinedReward
 from fastfiz_env.utils.fastfiz import create_table_state
-import numpy as np
 
 
 def weight_fn(num_balls: int, current_step: int, max_steps: int | None) -> float:

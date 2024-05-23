@@ -1,10 +1,12 @@
 import unittest
+
 import fastfiz as ff
+
 from fastfiz_env.utils.fastfiz import (
-    create_table_state,
-    num_balls_in_play,
     any_ball_has_moved,
+    create_table_state,
     get_ball_positions,
+    num_balls_in_play,
 )
 
 

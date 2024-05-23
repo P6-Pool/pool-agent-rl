@@ -1,7 +1,8 @@
-from ...reward_functions import BinaryReward
-from ...utils.fastfiz.fastfiz import num_balls_pocketed
 import fastfiz as ff
 import numpy as np
+
+from ...reward_functions import BinaryReward
+from ...utils.fastfiz.fastfiz import num_balls_pocketed
 
 
 class StepNoBallsPocketedReward(BinaryReward):

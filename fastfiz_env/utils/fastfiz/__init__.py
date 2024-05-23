@@ -30,18 +30,21 @@ __all__ = [
 
 
 from .fastfiz import (
+    POCKETS,
     action_to_shot,
     any_ball_has_moved,
     ball_overlaps,
+    ball_state_to_pocket,
     create_random_table_state,
     create_table_state,
     distance_to_closest_pocket,
     distance_to_pocket,
     distance_to_pockets,
     distances_to_closest_pocket,
-    get_ball_positions_id,
     get_ball_positions,
+    get_ball_positions_id,
     get_ball_velocity,
+    get_pocket_center,
     is_pocketed_state,
     map_action_to_shot_params,
     normalize_ball_positions,
@@ -54,7 +57,4 @@ from .fastfiz import (
     shotparams_to_list,
     shotparams_to_string,
     table_state_to_string,
-    ball_state_to_pocket,
-    get_pocket_center,
-    POCKETS,
 )

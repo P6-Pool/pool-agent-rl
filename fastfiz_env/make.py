@@ -1,8 +1,9 @@
-from gymnasium.envs.registration import EnvSpec
 import gymnasium as gym
+from gymnasium.envs.registration import EnvSpec
 
 from fastfiz_env.wrappers.action import ActionSpaces, FastFizActionWrapper
-from .reward_functions import RewardFunction, DefaultReward
+
+from .reward_functions import DefaultReward, RewardFunction
 
 
 def make(

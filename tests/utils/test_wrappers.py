@@ -1,4 +1,5 @@
 import unittest
+
 from fastfiz_env.wrappers.utils import cart2sph, sph2deg
 
 

@@ -1,19 +1,20 @@
 from logging import warn
+from typing import Optional
+
 import fastfiz as ff
-import numpy as np
 import gymnasium as gym
+import numpy as np
 from gymnasium import spaces
 
 from fastfiz_env.utils.fastfiz.fastfiz import num_balls_pocketed
 
+from ..reward_functions import DefaultReward, RewardFunction
 from ..utils.fastfiz import (
     create_random_table_state,
     get_ball_positions,
     normalize_ball_positions,
 )
-from .utils import game_won, terminal_state, possible_shot
-from typing import Optional
-from ..reward_functions import RewardFunction, DefaultReward
+from .utils import game_won, possible_shot, terminal_state
 
 
 class FastFiz(gym.Env):

@@ -1,6 +1,7 @@
-from .. import BinaryReward
 import fastfiz as ff
 import numpy as np
+
+from .. import BinaryReward
 
 
 class ImpossibleShotReward(BinaryReward):

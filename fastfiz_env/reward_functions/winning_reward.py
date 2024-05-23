@@ -1,15 +1,15 @@
 from .combined_reward import CombinedReward
 from .common import (
     ConstantReward,
-    StepPocketedReward,
-    GameWonReward,
-    CueBallPocketedReward,
-    ConstantWeightBalls,
-    NegativeConstantWeightMaxSteps,
     ConstantWeight,
-    NegativeConstantWeight,
+    ConstantWeightBalls,
+    CueBallPocketedReward,
     ExponentialVelocityReward,
+    GameWonReward,
+    NegativeConstantWeight,
+    NegativeConstantWeightMaxSteps,
     StepNoBallsPocketedReward,
+    StepPocketedReward,
 )
 
 rewards = [

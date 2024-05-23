@@ -1,6 +1,7 @@
-from ..reward_function import RewardFunction
 import fastfiz as ff
 import numpy as np
+
+from ..reward_function import RewardFunction
 
 
 class VelocityReward(RewardFunction):

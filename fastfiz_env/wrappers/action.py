@@ -1,8 +1,9 @@
-from .utils import cart2sph, sph2deg
-from gymnasium import ActionWrapper
-from gymnasium import spaces
-import numpy as np
 from enum import Enum
+
+import numpy as np
+from gymnasium import ActionWrapper, spaces
+
+from .utils import cart2sph, sph2deg
 
 
 class ActionSpaces(Enum):

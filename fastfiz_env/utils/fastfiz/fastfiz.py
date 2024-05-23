@@ -1,6 +1,7 @@
-import numpy as np
 from typing import Optional
+
 import fastfiz as ff
+import numpy as np
 from gymnasium import spaces
 
 POCKETS = [

@@ -1,4 +1,5 @@
 import unittest
+
 from fastfiz_env.envs import FastFiz
 from fastfiz_env.reward_functions.common import ConstantReward
 from fastfiz_env.wrappers import TimeLimitInjectionWrapper

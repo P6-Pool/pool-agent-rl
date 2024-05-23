@@ -26,9 +26,9 @@ model.learn(total_timesteps=100_000)
 
 __version__ = "0.0.1"
 
-from .make import make, make_wrapped_env, make_callable_wrapped_env
-from .reward_functions import DefaultReward, RewardFunction, CombinedReward
-from . import envs, utils, wrappers, reward_functions
+from . import envs, reward_functions, utils, wrappers
+from .make import make, make_callable_wrapped_env, make_wrapped_env
+from .reward_functions import CombinedReward, DefaultReward, RewardFunction
 
 __all__ = [
     "make",
@@ -44,7 +44,6 @@ __all__ = [
 ]
 
 from gymnasium.envs.registration import register
-
 
 register(
     id="FastFiz-v0",

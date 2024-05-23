@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Union
+
 import fastfiz as ff
-from .reward_function import RewardFunction, Weight
 import numpy as np
+
+from .reward_function import RewardFunction, Weight
 
 
 class BinaryReward(RewardFunction, ABC):

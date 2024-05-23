@@ -1,8 +1,10 @@
 from typing import Optional
-from .reward_function import RewardFunction, Weight
-from .binary_reward import BinaryReward
+
 import fastfiz as ff
 import numpy as np
+
+from .binary_reward import BinaryReward
+from .reward_function import RewardFunction, Weight
 
 
 class CombinedReward(RewardFunction):

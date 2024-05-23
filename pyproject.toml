@@ -24,6 +24,7 @@ dev = [
     "torch",
     "tensorboard",
     "optuna",
+    "matplotlib"
 ]
 test = ["pytest", "mypy", "ruff"]
 all = [
@@ -35,6 +36,7 @@ all = [
     "torch",
     "tensorboard",
     "optuna",
+    "matplotlib",
     # test
     "pytest",
     "mypy",
